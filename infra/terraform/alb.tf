@@ -2,7 +2,7 @@ resource "aws_alb" "main" {
   name            = "${var.project}-${var.environment}-alb"
   internal        = false
   security_groups = [aws_security_group.alb.id]
-  subnets         = var.public_subnet_ids
+  subnets         = module.vpc.public_subnet_ids
 
   enable_deletion_protection = false
 
@@ -11,7 +11,7 @@ resource "aws_alb" "main" {
 
 resource "aws_security_group" "alb" {
   name   = "${var.project}-${var.environment}-alb"
-  vpc_id = var.vpc_id
+  vpc_id = module.vpc.vpc_id
 
   ingress {
     from_port   = 443
@@ -41,7 +41,7 @@ resource "aws_alb_target_group" "app" {
   name        = "${var.project}-${var.environment}-tg"
   port        = 8000
   protocol    = "HTTP"
-  vpc_id      = var.vpc_id
+  vpc_id      = module.vpc.vpc_id
   target_type = "ip"
 
   health_check {

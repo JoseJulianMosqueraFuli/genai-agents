@@ -1,0 +1,16 @@
+region             = "us-east-1"
+environment        = "dev"
+project            = "genai-agents"
+
+llm_provider   = "bedrock"
+llm_model      = "gpt-4o-mini"
+bedrock_model_id = "anthropic.claude-3-5-sonnet-20240620-v1"
+embedding_model = "text-embedding-3-small"
+
+enable_guardrails = true
+desired_count     = 1
+task_cpu          = 512
+task_memory       = 1024
+
+# Only needed when llm_provider = "openai":
+# openai_api_key = "sk-..."

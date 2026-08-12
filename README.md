@@ -126,6 +126,18 @@ pytest tests/ -v
 - [ ] Guardrail-as-code policies (budget caps, topic allowlists)
 - [ ] Prometheus metrics for latency, cost and eval drift
 
+## Deploy on AWS (ECS Fargate Spot)
+
+The project ships with Terraform to deploy the service on **Amazon ECS Fargate with FARGATE_SPOT capacity** behind an ALB, with VPC/NAT, ECR, CloudWatch and IAM (Bedrock-ready).
+
+```bash
+cd infra/terraform
+cp terraform.tfvars.example terraform.tfvars   # llm_provider = "bedrock" (or "openai")
+terraform init && terraform apply
+```
+
+See [`infra/terraform/README.md`](infra/terraform/README.md) for the full walkthrough (image push, verification, teardown).
+
 ## Tech Stack
 
-FastAPI · LangGraph · OpenAI · AWS Bedrock · Docker · GitHub Actions · pytest
+FastAPI · LangGraph · OpenAI · AWS Bedrock · Docker · ECS Fargate · Terraform · GitHub Actions · pytest
