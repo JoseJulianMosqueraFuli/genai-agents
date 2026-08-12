@@ -1,0 +1,36 @@
+{
+  "name": "genai-agents-eval",
+  "version": "0.1.0",
+  "questions": [
+    {
+      "id": "q1",
+      "query": "What is Kubernetes?",
+      "expected": "container orchestration platform",
+      "category": "factual"
+    },
+    {
+      "id": "q2",
+      "query": "What is Terraform used for?",
+      "expected": "infrastructure as code",
+      "category": "factual"
+    },
+    {
+      "id": "q3",
+      "query": "What does a load balancer do?",
+      "expected": "distributes traffic",
+      "category": "factual"
+    },
+    {
+      "id": "q4",
+      "query": "Explain why microservices architecture is preferred for scaling",
+      "expected": "independent scaling",
+      "category": "reasoning"
+    },
+    {
+      "id": "q5",
+      "query": "Design a deployment strategy for a stateful service",
+      "expected": "blue-green or canary",
+      "category": "reasoning"
+    }
+  ]
+}

@@ -7,6 +7,8 @@ from pydantic import BaseModel, Field
 from app.agents.graph import build_graph
 from app.agents.nodes import AnswerNode, RetrieverNode, Router
 from app.config import get_settings
+from app.costs.cache import ResponseCache
+from app.costs.tiering import ComplexityRouter
 from app.eval.cost import CostTracker
 from app.eval.metrics import evaluate_answer
 from app.guards import inspect_input, inspect_output
@@ -34,6 +36,8 @@ class AgentResponse(BaseModel):
     cost_usd: float = 0.0
     guardrail_blocked: bool = False
     latency_ms: int = 0
+    cache_hit: bool = False
+    tier: str = ""
 
 
 def _init_services():
@@ -46,6 +50,8 @@ def _init_services():
 
 
 provider, store, graph = _init_services()
+tier_router = ComplexityRouter()
+response_cache = ResponseCache(ttl_seconds=3600)
 
 
 @app.post("/v1/agents/chat", response_model=AgentResponse)
@@ -63,6 +69,31 @@ async def agent_chat(req: AgentRequest) -> AgentResponse:
             model=settings.llm_model,
             guardrail_blocked=True,
             latency_ms=int((time.monotonic() - started) * 1000),
+        )
+
+    tier = tier_router.decide(req.query)
+    model = tier.model
+
+    # Cost discipline: return cached response when the same query+model repeats.
+    cached = response_cache.get(req.query, model)
+    if cached is not None:
+        latency_ms = int((time.monotonic() - started) * 1000)
+        structured_log(
+            "INFO", "agent.chat", query_len=len(req.query), latency_ms=latency_ms,
+            cost_usd=0.0, cache_hit=True, tier=tier.tier,
+        )
+        return AgentResponse(
+            query=req.query,
+            answer=cached["answer"],
+            provider=cached["provider"],
+            model=cached["model"],
+            context_sources=cached.get("context_sources", []),
+            eval_scores=cached.get("eval_scores", {}),
+            usage=cached.get("usage", {}),
+            cost_usd=0.0,
+            latency_ms=latency_ms,
+            cache_hit=True,
+            tier=tier.tier,
         )
 
     state = {
@@ -112,9 +143,11 @@ async def agent_chat(req: AgentRequest) -> AgentResponse:
         query_len=len(req.query),
         latency_ms=latency_ms,
         cost_usd=cost.total,
+        cache_hit=False,
+        tier=tier.tier,
     )
 
-    return AgentResponse(
+    response = AgentResponse(
         query=req.query,
         answer=answer,
         provider=result.get("provider", settings.llm_provider),
@@ -124,7 +157,21 @@ async def agent_chat(req: AgentRequest) -> AgentResponse:
         usage=usage,
         cost_usd=round(cost.total, 6),
         latency_ms=latency_ms,
+        cache_hit=False,
+        tier=tier.tier,
     )
+
+    # Store response keyed by the tier-resolved model for future hits.
+    response_cache.set(req.query, model, {
+        "answer": answer,
+        "provider": result.get("provider", settings.llm_provider),
+        "model": result.get("model", settings.llm_model),
+        "context_sources": sources,
+        "eval_scores": eval_scores,
+        "usage": usage,
+    })
+
+    return response
 
 
 @app.get("/health")
@@ -135,3 +182,8 @@ async def health() -> dict:
         "provider": settings.llm_provider,
         "guardrails": settings.enable_guardrails,
     }
+
+
+@app.get("/v1/cache/stats")
+async def cache_stats() -> dict:
+    return response_cache.stats()

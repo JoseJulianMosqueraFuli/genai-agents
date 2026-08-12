@@ -118,6 +118,52 @@ pytest tests/ -v
 { "status": "ok", "app": "genai-agents", "provider": "openai", "guardrails": true }
 ```
 
+### `GET /v1/cache/stats`
+
+Cache hit-rate for the response cache (cost discipline):
+
+```json
+{ "size": 12, "hits": 34, "misses": 12, "hit_rate": 0.739 }
+```
+
+## Cost discipline: tiering + caching
+
+Two mechanisms Provectus-style cost discipline, both live in `app/costs/`:
+
+- **Model tiering** (`costs/tiering.py`): a `ComplexityRouter` sends short/factual queries to the cheap model (`gpt-4o-mini`) and reasoning/multi-step ones to the strong model. Not every question deserves Sonnet.
+- **Response caching** (`costs/cache.py`): identical (query, model) pairs return from an in-memory cache with TTL — a cache hit costs **$0.00** and ~0ms. See `GET /v1/cache/stats`.
+
+## Measured release gates
+
+The `eval/` harness is what gates a release — the *"what you measured, how you produced ground truth, what gated a release"* question:
+
+```
+eval/
+├── dataset/qa.json      # 5 questions + expected answers (ground truth)
+├── harness.py           # EvalRunner (scores each answer) + ReleaseGate (thresholds)
+└── test_eval_gates.py   # CI: runs the dataset through a mock answerer
+```
+
+A release is promoted only if the gate passes:
+
+```json
+{
+  "avg_faithfulness": 0.87,
+  "avg_relevance": 0.82,
+  "thresholds": { "faithfulness": 0.6, "relevance": 0.5 },
+  "passed": true,
+  "num_questions": 5
+}
+```
+
+Run it:
+
+```bash
+pytest eval/test_eval_gates.py -v
+```
+
+In production you wire the `EvalRunner` to the real agent and block the pipeline on `ReleaseGate.evaluate()`. The `releases/` folder holds the per-release report (what was measured, thresholds, outcome).
+
 ## Roadmap
 
 - [ ] Persistent vector store (pgvector / FAISS) instead of in-memory
