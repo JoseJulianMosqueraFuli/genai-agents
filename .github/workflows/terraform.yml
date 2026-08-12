@@ -1,0 +1,61 @@
+name: Terraform
+
+on:
+  push:
+    paths:
+      - "infra/terraform/**"
+  pull_request:
+    paths:
+      - "infra/terraform/**"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Validate + Test (plan only)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform
+    env:
+      AWS_ACCESS_KEY_ID: dummy
+      AWS_SECRET_ACCESS_KEY: dummy
+      AWS_DEFAULT_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: terraform fmt
+        run: terraform fmt -recursive -check
+
+      - name: terraform init
+        run: terraform init -backend=false
+
+      - name: terraform validate
+        run: terraform validate
+
+      - name: terraform test (plan only, mocked provider)
+        run: terraform test -verbose
+
+      - name: tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: tflint init
+        run: tflint --init
+        continue-on-error: true
+
+      - name: tflint check
+        run: tflint -f compact
+
+      - name: tfsec
+        uses: aquasecurity/tfsec-pr-commenter-action@v1.3.1
+        with:
+          github_token: ${{ github.token }}
+          working_directory: infra/terraform
+        continue-on-error: true
