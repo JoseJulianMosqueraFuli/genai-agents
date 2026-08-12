@@ -1,16 +1,15 @@
-data "aws_iam_policy_document" "ecs_execution_assume" {
-  statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
-    }
-  }
-}
-
 resource "aws_iam_role" "ecs_execution" {
-  name               = "${var.project}-${var.environment}-ecs-execution"
-  assume_role_policy = data.aws_iam_policy_document.ecs_execution_assume.json
+  name = "${var.project}-${var.environment}-ecs-execution"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = { Service = "ecs-tasks.amazonaws.com" }
+      }
+    ]
+  })
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_execution" {
@@ -34,19 +33,18 @@ resource "aws_iam_role_policy" "ecs_execution_secrets" {
   })
 }
 
-data "aws_iam_policy_document" "ecs_task_assume" {
-  statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
-    }
-  }
-}
-
 resource "aws_iam_role" "ecs_task" {
-  name               = "${var.project}-${var.environment}-ecs-task"
-  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume.json
+  name = "${var.project}-${var.environment}-ecs-task"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = { Service = "ecs-tasks.amazonaws.com" }
+      }
+    ]
+  })
 }
 
 resource "aws_iam_role_policy" "bedrock" {
