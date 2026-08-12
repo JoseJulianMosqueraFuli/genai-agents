@@ -11,3 +11,11 @@ build/
 coverage.xml
 .coverage
 htmlcov/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+*.tfvars
+!terraform.tfvars.example
