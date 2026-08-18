@@ -15,6 +15,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          cache-suffix: lint
 
       - name: Set up Python
         run: uv python install
@@ -37,6 +38,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          cache-suffix: test
 
       - name: Set up Python
         run: uv python install
