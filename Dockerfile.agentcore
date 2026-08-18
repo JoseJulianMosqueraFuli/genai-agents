@@ -1,0 +1,24 @@
+# Container image for Amazon Bedrock AgentCore Runtime.
+#
+# AgentCore Runtime requires the container to expose the agent on port 8080 with
+# /invocations (POST) and /ping (GET). The bedrock-agentcore SDK's `app.run()`
+# handles both when we launch app/runtime/agentcore_app.py.
+#
+# The `agentcore` starter toolkit can build/push this for you (`agentcore launch`);
+# this Dockerfile is provided for manual builds and CI parity.
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+COPY requirements.txt requirements-agentcore.txt ./
+RUN pip install --no-cache-dir -r requirements-agentcore.txt
+
+COPY app ./app
+
+# AgentCore Runtime contract: agent listens on 8080.
+EXPOSE 8080
+
+CMD ["python", "-m", "app.runtime.agentcore_app"]
