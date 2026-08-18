@@ -126,7 +126,14 @@ class AgentPipeline:
             )
 
         history = self._render_history(session_id)
-        state = {"query": query, "use_rag": use_rag, "session_id": session_id, "history": history}
+        state = {
+            "query": query,
+            "use_rag": use_rag,
+            "session_id": session_id,
+            "history": history,
+            # Route the tier-selected model to the LLM (cost discipline, for real).
+            "model": model,
+        }
         result = await self.graph.ainvoke(state)
 
         answer = result.get("answer", "")

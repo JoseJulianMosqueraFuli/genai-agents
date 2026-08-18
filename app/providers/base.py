@@ -38,7 +38,11 @@ class LLMProvider(ABC):
 
     @abstractmethod
     async def generate(self, system: str, user: str, **kwargs) -> LLMResponse:
-        """Generate a completion from a system prompt and a user prompt."""
+        """Generate a completion from a system prompt and a user prompt.
+
+        Recognized kwargs: ``model`` (override the default model for tiering),
+        ``temperature``, ``max_tokens``.
+        """
 
     @abstractmethod
     async def embed(self, texts: list[str]) -> list[list[float]]:

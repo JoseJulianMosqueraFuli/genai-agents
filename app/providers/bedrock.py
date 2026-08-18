@@ -26,9 +26,11 @@ class BedrockProvider(LLMProvider):
         self.embedding_dimension = settings.embedding_dimension
 
     async def generate(self, system: str, user: str, **kwargs) -> LLMResponse:
+        # `model` override lets the tiering router pick cheap vs strong per request.
+        model = kwargs.get("model") or self.model
         try:
             resp = self.client.converse(
-                modelId=self.model,
+                modelId=model,
                 system=[{"text": system}],
                 messages=[{"role": "user", "content": [{"text": user}]}],
                 inferenceConfig={
@@ -46,11 +48,11 @@ class BedrockProvider(LLMProvider):
             structured_log(
                 "INFO",
                 "bedrock.generate",
-                model=self.model,
+                model=model,
                 input_tokens=usage_out.input_tokens,
                 output_tokens=usage_out.output_tokens,
             )
-            return LLMResponse(text=text, usage=usage_out, model=self.model, raw=resp)
+            return LLMResponse(text=text, usage=usage_out, model=model, raw=resp)
         except Exception as e:
             structured_log("ERROR", "bedrock.generate.error", error=str(e))
             raise LLMProviderError(str(e)) from e

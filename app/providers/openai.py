@@ -17,9 +17,11 @@ class OpenAIProvider(LLMProvider):
         self.embedding_model = settings.embedding_model
 
     async def generate(self, system: str, user: str, **kwargs) -> LLMResponse:
+        # `model` override lets the tiering router pick cheap vs strong per request.
+        model = kwargs.get("model") or self.model
         try:
             resp = await self.client.chat.completions.create(
-                model=self.model,
+                model=model,
                 messages=[
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
@@ -35,14 +37,14 @@ class OpenAIProvider(LLMProvider):
             structured_log(
                 "INFO",
                 "openai.generate",
-                model=self.model,
+                model=model,
                 input_tokens=usage_out.input_tokens,
                 output_tokens=usage_out.output_tokens,
             )
             return LLMResponse(
                 text=resp.choices[0].message.content or "",
                 usage=usage_out,
-                model=self.model,
+                model=model,
             )
         except Exception as e:
             structured_log("ERROR", "openai.generate.error", error=str(e))

@@ -56,7 +56,10 @@ class AnswerNode:
         system = ANSWER_SYSTEM
         history_block = f"Conversation so far:\n{history}\n\n" if history else ""
         user = f"{history_block}Context:\n{context}\n\nQuestion: {query}\nAnswer:"
-        resp = await self.provider.generate(system, user)
+        # The tiering router puts the chosen model on the state; pass it through so
+        # the cheap/strong decision actually reaches the LLM.
+        requested_model = state.get("model")
+        resp = await self.provider.generate(system, user, model=requested_model)
         state["answer"] = resp.text
         state["provider"] = self.provider.name
         state["model"] = resp.model
