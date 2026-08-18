@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     enable_guardrails: bool = True
     max_context_tokens: int = 4000
 
+    # CORS origins allowed to call the API (the React/Vite SPA). Defaults to the
+    # Vite dev server; override with a JSON list in CORS_ALLOW_ORIGINS for prod.
+    # The dev server can also just use its proxy, in which case CORS is unused.
+    cors_allow_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
     # RAG retrieval: "in_memory" (default) or "s3_vectors" (Amazon S3 Vectors).
     vector_backend: Literal["in_memory", "s3_vectors"] = "in_memory"
     s3_vectors_bucket: str = ""

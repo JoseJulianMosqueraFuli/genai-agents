@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -9,6 +10,16 @@ from app.providers.base import LLMProviderError
 
 app = FastAPI(title="genai-agents", version="0.2.0")
 settings = get_settings()
+
+# Allow the SPA (served from a different origin than the API) to call it. Origins
+# are explicit — never "*" — so credentials stay safe.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allow_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 
 @app.exception_handler(LLMProviderError)
