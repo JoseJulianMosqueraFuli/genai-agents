@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # uv for fast, reproducible installs from the committed lockfile.
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
