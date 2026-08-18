@@ -19,7 +19,7 @@ Most GenAI demos stop at "call an LLM". This one is built like a production serv
 - **LangGraph agent** wiring retrieval → grounding → answer, so every response is traceable.
 - **Guardrails** on input (prompt injection) and output (PII redaction) — required for real clients.
 - **Eval + observability**: faithfulness / answer-relevance scores and per-request cost in USD.
-- **TDD**: 25 tests, all external providers mocked — CI runs them on every push.
+- **TDD**: 64 tests, all external providers mocked — CI runs them on every push.
 
 ## Architecture
 
@@ -85,15 +85,15 @@ uv run pytest tests/ -v
 
 ## Configuration (`.env`)
 
-| Variable                    | Default                                   | Description                     |
-| --------------------------- | ----------------------------------------- | ------------------------------- |
-| `LLM_PROVIDER`              | `openai`                                  | `openai` or `bedrock`           |
-| `LLM_MODEL`                 | `gpt-4o-mini`                             | Model for OpenAI                |
-| `BEDROCK_MODEL_ID`          | `anthropic.claude-3-5-sonnet-20240620-v1` | Claude via Bedrock              |
-| `EMBEDDING_MODEL`           | `text-embedding-3-small`                  | Embeddings model                |
-| `ENABLE_GUARDRAILS`         | `true`                                    | Toggle input/output guards      |
-| `COST_PER_1K_INPUT_TOKENS`  | `0.00015`                                 | $/1k input tokens (cost model)  |
-| `COST_PER_1K_OUTPUT_TOKENS` | `0.0006`                                  | $/1k output tokens (cost model) |
+| Variable                    | Default                   | Description                              |
+| --------------------------- | ------------------------- | ---------------------------------------- |
+| `LLM_PROVIDER`              | `openai`                  | `openai` or `bedrock`                    |
+| `LLM_MODEL`                 | `gpt-4o-mini`             | Model for OpenAI                         |
+| `BEDROCK_MODEL_ID`          | `us.amazon.nova-pro-v1:0` | Strong-tier model via Bedrock (Converse) |
+| `EMBEDDING_MODEL`           | `text-embedding-3-small`  | Embeddings model                         |
+| `ENABLE_GUARDRAILS`         | `true`                    | Toggle input/output guards               |
+| `COST_PER_1K_INPUT_TOKENS`  | `0.00015`                 | Fallback $/1k input for unknown models   |
+| `COST_PER_1K_OUTPUT_TOKENS` | `0.0006`                  | Fallback $/1k output for unknown models  |
 
 ## API
 
@@ -170,9 +170,10 @@ Cache hit-rate for the response cache (cost discipline):
 
 ## Cost discipline: tiering + caching
 
-Two mechanisms Provectus-style cost discipline, both live in `app/costs/`:
+Three mechanisms for cost discipline:
 
-- **Model tiering** (`costs/tiering.py`): a `ComplexityRouter` sends short/factual queries to the cheap model (`gpt-4o-mini`) and reasoning/multi-step ones to the strong model. Not every question deserves Sonnet.
+- **Model tiering** (`costs/tiering.py`): a provider-aware `ComplexityRouter` sends short/factual queries to the cheap model (`gpt-4o-mini` / Amazon Nova Micro) and reasoning/multi-step ones to the strong model (`gpt-4o` / Nova Pro). The tier-selected model is injected into the graph and passed to `provider.generate(model=...)`, so routing actually reaches the LLM — not just the cache key.
+- **Per-model cost tracking** (`eval/cost.py`): `CostTracker` prices each request against the model that actually ran (`MODEL_PRICING` table), so a cheap-tier answer isn't billed like the strong tier. Unknown models fall back to `COST_PER_1K_*`. Inference-profile ids (e.g. `us.amazon.nova-pro-v1:0`) resolve to their base model price.
 - **Response caching** (`costs/cache.py`): identical (query, model) pairs return from an in-memory cache with TTL — a cache hit costs **$0.00** and ~0ms. See `GET /v1/cache/stats`.
 
 ## Measured release gates
@@ -257,8 +258,10 @@ purpose-built, serverless vector store managed entirely via SDK (no console, no
 OpenSearch/Aurora cluster). Paired with **Amazon Nova** for generation (via the
 Converse API, with Nova Micro ↔ Nova Pro tiering) and **Amazon Titan Text Embeddings
 V2** for embeddings, it makes the whole stack native AWS. The `S3VectorStore` keeps
-the same `VectorStore` contract, so the agent code is unchanged. Full guide:
-[`docs/rag-s3-vectors.md`](docs/rag-s3-vectors.md).
+the same `VectorStore` contract, so the agent code is unchanged. Its `size` reports a
+**live count** (paginated `list_vectors`), so `POST /v1/documents` `total` reflects the
+real index — including vectors written by other processes — not just this instance's
+additions. Full guide: [`docs/rag-s3-vectors.md`](docs/rag-s3-vectors.md).
 
 ```env
 LLM_PROVIDER=bedrock

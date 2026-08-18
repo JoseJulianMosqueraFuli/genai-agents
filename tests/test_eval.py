@@ -32,6 +32,27 @@ class TestCostTracker:
         tracker.add(LLMUsage(1, 1))
         assert tracker.request_count == 1
 
+    def test_per_model_pricing_beats_default(self):
+        # Same usage on cheap vs strong tier must cost different amounts.
+        cheap = CostTracker()
+        cheap.add(LLMUsage(1000, 1000), model="us.amazon.nova-micro-v1:0")
+        strong = CostTracker()
+        strong.add(LLMUsage(1000, 1000), model="us.amazon.nova-pro-v1:0")
+        assert strong.estimate().total > cheap.estimate().total
+
+    def test_inference_profile_id_resolves_by_substring(self):
+        # Region-prefixed inference profile id resolves to the base Nova Pro price.
+        tracker = CostTracker()
+        tracker.add(LLMUsage(1000, 1000), model="us.amazon.nova-pro-v1:0")
+        est = tracker.estimate()
+        assert est.total == pytest.approx(0.0008 + 0.0032)
+
+    def test_unknown_model_uses_default_price(self):
+        tracker = CostTracker(input_price_per_1k=0.10, output_price_per_1k=0.20)
+        tracker.add(LLMUsage(1000, 1000), model="some-unlisted-model")
+        est = tracker.estimate()
+        assert est.total == pytest.approx(0.10 + 0.20)
+
 
 class TestMetrics:
     def test_faithfulness_grounded_claims(self):

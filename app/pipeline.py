@@ -161,8 +161,11 @@ class AgentPipeline:
             input_price_per_1k=self.settings.cost_per_1k_input_tokens,
             output_price_per_1k=self.settings.cost_per_1k_output_tokens,
         )
+        # Bill against the model that actually ran (tier-selected), so cheap/strong
+        # routing shows up in reported cost, not just in the cache key.
         tracker.add(
-            LLMUsage(input_tokens=usage["input_tokens"], output_tokens=usage["output_tokens"])
+            LLMUsage(input_tokens=usage["input_tokens"], output_tokens=usage["output_tokens"]),
+            model=model,
         )
         cost = tracker.estimate()
 

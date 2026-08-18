@@ -44,6 +44,24 @@ class FakeS3VectorsClient:
         return {"vectors": self._query_hits}
 
 
+class FakeListingS3VectorsClient(FakeS3VectorsClient):
+    """S3 Vectors fake that also supports paginated list_vectors (for size)."""
+
+    def __init__(self, pages, **kwargs):
+        super().__init__(**kwargs)
+        self._pages = pages  # list of (vectors, nextToken) tuples
+        self.list_calls = []
+
+    def list_vectors(self, **kwargs):
+        self.list_calls.append(kwargs)
+        idx = len(self.list_calls) - 1
+        vectors, token = self._pages[idx]
+        resp = {"vectors": vectors}
+        if token:
+            resp["nextToken"] = token
+        return resp
+
+
 def _store(client, **kw):
     return S3VectorStore(FakeProvider(), bucket="b", index="i", client=client, **kw)
 
@@ -64,6 +82,7 @@ async def test_add_documents_puts_vectors_with_text_metadata():
     assert len(vectors) == 2
     assert vectors[0]["data"]["float32"] == [1.0, 0.0]
     assert vectors[0]["metadata"]["text"] == "AWS is a cloud platform"
+    # No list_vectors on this fake -> size falls back to the local add counter.
     assert store.size == 2
 
 
@@ -106,6 +125,28 @@ async def test_search_maps_hits_to_retrieved_docs():
 async def test_search_empty_index_returns_empty():
     store = _store(FakeS3VectorsClient(query_hits=[]))
     assert await store.search("anything") == []
+
+
+def test_size_uses_live_count_across_pages():
+    # Two pages of list_vectors -> live count is the real total (5), not the
+    # local counter (0), reflecting vectors written by other processes.
+    client = FakeListingS3VectorsClient(
+        pages=[
+            ([{"key": "a"}, {"key": "b"}, {"key": "c"}], "tok"),
+            ([{"key": "d"}, {"key": "e"}], None),
+        ]
+    )
+    store = _store(client)
+    assert store.size == 5
+    assert len(client.list_calls) == 2
+    assert client.list_calls[0]["returnData"] is False
+
+
+def test_size_falls_back_to_local_count_without_list_vectors():
+    client = FakeS3VectorsClient()  # no list_vectors
+    store = _store(client)
+    store._count = 7
+    assert store.size == 7
 
 
 def test_ensure_index_is_idempotent_and_declares_text_nonfilterable():

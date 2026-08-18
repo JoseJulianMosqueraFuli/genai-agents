@@ -16,7 +16,7 @@ La mayoría de demos GenAI se quedan en "llamar a un LLM". Este está construido
 - **Agente LangGraph** conectando recuperación → grounding → respuesta, para que cada respuesta sea trazable.
 - **Guardrails** de entrada (prompt injection) y salida (redacción de PII) — requerido para clientes reales.
 - **Eval + observabilidad**: puntajes de faithfulness / relevancia y costo por request en USD.
-- **TDD**: 25 tests, todos los proveedores mockeados — CI los corre en cada push.
+- **TDD**: 64 tests, todos los proveedores mockeados — CI los corre en cada push.
 
 ## Arquitectura
 

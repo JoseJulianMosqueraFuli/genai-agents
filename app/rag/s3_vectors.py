@@ -154,5 +154,40 @@ class S3VectorStore:
 
     @property
     def size(self) -> int:
-        """Best-effort count of vectors added via this instance (not a live count)."""
-        return self._count
+        """Live count of vectors in the index, best-effort.
+
+        Queries S3 Vectors via paginated ``list_vectors`` so the number reflects
+        what is actually stored (including vectors written by other processes),
+        not just what this instance added. Falls back to the local add counter
+        when the backend can't be listed (client without ``list_vectors``, or a
+        transient error) so the value is never misleadingly zero.
+        """
+        live = self._live_count()
+        return live if live is not None else self._count
+
+    def _live_count(self) -> int | None:
+        """Count vectors in the index via paginated ``list_vectors``, or ``None``."""
+        lister = getattr(self.client, "list_vectors", None)
+        if not callable(lister):
+            return None
+        try:
+            total = 0
+            token: str | None = None
+            while True:
+                kwargs: dict[str, Any] = {
+                    "vectorBucketName": self.bucket,
+                    "indexName": self.index,
+                    "returnData": False,
+                    "returnMetadata": False,
+                }
+                if token:
+                    kwargs["nextToken"] = token
+                resp = lister(**kwargs)
+                total += len(resp.get("vectors", []))
+                token = resp.get("nextToken")
+                if not token:
+                    break
+            return total
+        except Exception as exc:  # backend hiccup -> fall back to local counter
+            structured_log("INFO", "s3vectors.count.fallback", detail=str(exc))
+            return None
