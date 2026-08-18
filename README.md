@@ -217,7 +217,7 @@ In production you wire the `EvalRunner` to the real agent and block the pipeline
 - [ ] Model A/B routing and canary deployments
 - [ ] Guardrail-as-code policies (budget caps, topic allowlists)
 - [ ] AgentCore Gateway (expose tools as MCP) + AgentCore Identity
-- [ ] Lint/format with `ruff` (config in `pyproject.toml`) wired into CI
+- [x] Lint/format with `ruff` (config in `pyproject.toml`) wired into CI
 - [ ] Prometheus metrics for latency, cost and eval drift
 
 ## Deploy on AWS (ECS Fargate Spot)
