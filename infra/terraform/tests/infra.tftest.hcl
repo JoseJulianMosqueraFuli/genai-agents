@@ -95,9 +95,12 @@ run "ecs_fargate_spot_strategy" {
     condition     = contains(module.ecs.capacity_providers, "FARGATE_SPOT")
     error_message = "ECS service must use the FARGATE_SPOT capacity provider"
   }
+  # Default is pure Spot: no on-demand FARGATE provider attached. A pinned
+  # launch_type would produce an empty strategy here, so this also guards against
+  # the launch_type regression that silently bypasses Spot.
   assert {
-    condition     = module.ecs.uses_launch_type == false
-    error_message = "ECS service must not set launch_type (it bypasses Spot)"
+    condition     = !contains(module.ecs.capacity_providers, "FARGATE")
+    error_message = "Default deployment must be pure Spot (no on-demand FARGATE)"
   }
 }
 
