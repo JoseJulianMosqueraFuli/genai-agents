@@ -50,6 +50,11 @@ resource "aws_ecs_task_definition" "app" {
         { name = "LLM_MODEL", value = var.llm_model },
         { name = "BEDROCK_MODEL_ID", value = var.bedrock_model_id },
         { name = "EMBEDDING_MODEL", value = var.embedding_model },
+        { name = "EMBEDDING_PROVIDER", value = var.embedding_provider },
+        { name = "BEDROCK_EMBEDDING_MODEL", value = var.bedrock_embedding_model },
+        { name = "VECTOR_BACKEND", value = var.vector_backend },
+        { name = "S3_VECTORS_BUCKET", value = var.s3_vectors_bucket },
+        { name = "S3_VECTORS_INDEX", value = var.s3_vectors_index },
         { name = "ENABLE_GUARDRAILS", value = tostring(var.enable_guardrails) },
         { name = "LOG_LEVEL", value = "INFO" },
       ]

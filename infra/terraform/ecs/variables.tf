@@ -83,6 +83,31 @@ variable "embedding_model" {
   default = "text-embedding-3-small"
 }
 
+variable "embedding_provider" {
+  type    = string
+  default = "bedrock"
+}
+
+variable "bedrock_embedding_model" {
+  type    = string
+  default = "amazon.titan-embed-text-v2:0"
+}
+
+variable "vector_backend" {
+  type    = string
+  default = "in_memory"
+}
+
+variable "s3_vectors_bucket" {
+  type    = string
+  default = ""
+}
+
+variable "s3_vectors_index" {
+  type    = string
+  default = "docs"
+}
+
 variable "enable_guardrails" {
   type    = bool
   default = true

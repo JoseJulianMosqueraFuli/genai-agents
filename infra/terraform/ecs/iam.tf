@@ -58,7 +58,40 @@ resource "aws_iam_role_policy" "bedrock" {
         Effect = "Allow"
         Action = [
           "bedrock:InvokeModel",
-          "bedrock:InvokeModelWithResponseStream"
+          "bedrock:InvokeModelWithResponseStream",
+          # Converse API (Nova / Claude / Llama) + Titan embeddings.
+          "bedrock:Converse",
+          "bedrock:ConverseStream"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# S3 Vectors: the app manages the vector bucket + index and reads/writes vectors
+# via the SDK (VECTOR_BACKEND=s3_vectors). Created only when a bucket is configured.
+resource "aws_iam_role_policy" "s3vectors" {
+  count = var.s3_vectors_bucket != "" ? 1 : 0
+  name  = "s3vectors"
+  role  = aws_iam_role.ecs_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3vectors:CreateVectorBucket",
+          "s3vectors:GetVectorBucket",
+          "s3vectors:CreateIndex",
+          "s3vectors:GetIndex",
+          "s3vectors:ListIndexes",
+          "s3vectors:PutVectors",
+          "s3vectors:GetVectors",
+          "s3vectors:QueryVectors",
+          "s3vectors:ListVectors",
+          "s3vectors:DeleteVectors"
         ]
         Resource = "*"
       }

@@ -39,6 +39,11 @@ module "ecs" {
   llm_model                 = var.llm_model
   bedrock_model_id          = var.bedrock_model_id
   embedding_model           = var.embedding_model
+  embedding_provider        = var.embedding_provider
+  bedrock_embedding_model   = var.bedrock_embedding_model
+  vector_backend            = var.vector_backend
+  s3_vectors_bucket         = var.s3_vectors_bucket
+  s3_vectors_index          = var.s3_vectors_index
   enable_guardrails         = var.enable_guardrails
   openai_api_key_secret_arn = var.llm_provider == "openai" ? aws_secretsmanager_secret.openai[0].arn : ""
 }

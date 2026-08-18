@@ -89,6 +89,36 @@ variable "embedding_model" {
   default     = "text-embedding-3-small"
 }
 
+variable "embedding_provider" {
+  description = "Embeddings provider: openai or bedrock"
+  type        = string
+  default     = "bedrock"
+}
+
+variable "bedrock_embedding_model" {
+  description = "Bedrock embeddings model (Amazon Titan Text Embeddings V2)"
+  type        = string
+  default     = "amazon.titan-embed-text-v2:0"
+}
+
+variable "vector_backend" {
+  description = "RAG vector store backend: in_memory or s3_vectors"
+  type        = string
+  default     = "in_memory"
+}
+
+variable "s3_vectors_bucket" {
+  description = "S3 Vectors bucket name (empty = disabled; app creates it via SDK)"
+  type        = string
+  default     = ""
+}
+
+variable "s3_vectors_index" {
+  description = "S3 Vectors index name"
+  type        = string
+  default     = "docs"
+}
+
 variable "enable_guardrails" {
   description = "Enable guardrails"
   type        = bool
