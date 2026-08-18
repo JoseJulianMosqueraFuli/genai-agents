@@ -13,7 +13,9 @@ services:
     build: .
     env_file:
       - .env
-    command: pytest tests/ -v
+    # The runtime image is installed with --no-dev, so pull in the dev group
+    # (pytest, httpx) from the lockfile before running the suite.
+    command: sh -c "uv sync --frozen && uv run pytest tests/ -v"
     volumes:
       - ./tests:/app/tests
       - ./app:/app/app

@@ -1,7 +1,45 @@
+[project]
+name = "genai-agents"
+version = "0.2.0"
+description = "Production-grade GenAI agent platform: RAG + multi-provider LLMs + LangGraph + guardrails + eval + cost tracking."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "langgraph>=0.0.20",
+    "openai>=1.0.0",
+    "boto3>=1.28.0",
+]
+
+[project.optional-dependencies]
+# Optional deps to deploy on Amazon Bedrock AgentCore (Runtime SDK + Memory + CLI).
+# Not needed for local dev, tests or the ECS Fargate path (imports are guarded).
+#   uv sync --extra agentcore
+agentcore = [
+    "bedrock-agentcore>=0.1.0",
+    "bedrock-agentcore-starter-toolkit>=0.1.0",
+]
+
+[dependency-groups]
+# Installed by default with `uv sync`; kept out of the runtime image via --no-dev.
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.24.0",
+]
+
+[tool.uv]
+# This is an application (code lives in ./app and is copied into the image), not an
+# installable library — uv manages the environment/deps only and does not build it.
+package = false
+
 [tool.pytest.ini_options]
 # Make the repo root importable so `import app...` works under a bare `pytest`
-# invocation (CI runs `pytest tests/ -v`, not `python -m pytest`, which would
-# otherwise not add the cwd to sys.path).
+# invocation (CI runs `uv run pytest tests/`, which does not add cwd to sys.path).
 pythonpath = ["."]
 testpaths = ["tests"]
 asyncio_mode = "strict"
