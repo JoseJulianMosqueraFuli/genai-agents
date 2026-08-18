@@ -1,18 +1,20 @@
 """Conversation memory for multi-turn agents.
 
-State of the art on AWS is Amazon Bedrock AgentCore Memory: a managed store that
-keeps short-term (session) and long-term (cross-session) context so agents stay
-coherent without you building your own storage layer.
+State of the art on AWS is Amazon Bedrock AgentCore Memory:
+a managed store that keeps short-term (session) and long-term (cross-session)
+context so agents stay coherent without you building your own storage layer.
 
-This module exposes a small `ConversationMemory` interface so the agent code stays
-provider-agnostic:
+This module exposes a small `ConversationMemory`
+interface so the agent code stays provider-agnostic:
 
-- `InMemoryConversationMemory` — default, zero-dependency, used in tests and local dev.
-- `AgentCoreMemory` — thin adapter over `bedrock_agentcore.memory` for production.
+- `InMemoryConversationMemory` — default, zero-dependency,
+used in tests and local dev.
+- `AgentCoreMemory` — thin adapter over `bedrock_agentcore.memory`
+for production.
 
-The concrete backend is chosen by config (`MEMORY_BACKEND`), so switching from local
-to AgentCore Memory is a one-line env change, mirroring the provider strategy used
-for LLMs.
+The concrete backend is chosen by config (`MEMORY_BACKEND`),
+so switching from local to AgentCore Memory is a one-line env change,
+mirroring the provider strategy used for LLMs.
 """
 
 from __future__ import annotations
@@ -68,8 +70,9 @@ class InMemoryConversationMemory(ConversationMemory):
 class AgentCoreMemory(ConversationMemory):
     """Adapter over Amazon Bedrock AgentCore Memory.
 
-    Requires the `bedrock-agentcore` SDK and AWS credentials at runtime. The import
-    is deferred so local dev and CI (which never talk to AWS) don't need the package.
+    Requires the `bedrock-agentcore` SDK and AWS credentials at runtime.
+    The import is deferred so local dev and CI (which never talk to AWS)
+    don't need the package.
     """
 
     def __init__(self, memory_id: str, region: str | None = None, actor_id: str = "user") -> None:
