@@ -31,6 +31,8 @@ module "ecs" {
   listener_rule_arn         = aws_alb_listener.http.arn
   alb_security_group_id     = aws_security_group.alb.id
   desired_count             = var.desired_count
+  fargate_spot_weight       = var.fargate_spot_weight
+  fargate_base_count        = var.fargate_base_count
   task_cpu                  = var.task_cpu
   task_memory               = var.task_memory
   llm_provider              = var.llm_provider

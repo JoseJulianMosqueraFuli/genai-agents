@@ -84,7 +84,26 @@ resource "aws_ecs_service" "app" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = var.desired_count
-  launch_type     = "FARGATE"
+
+  # Run on Fargate Spot. NOTE: `launch_type` and `capacity_provider_strategy` are
+  # mutually exclusive — setting launch_type = "FARGATE" would silently ignore the
+  # cluster's Spot default and run on-demand. So we pin the strategy here instead.
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight            = var.fargate_spot_weight
+    base              = 0
+  }
+
+  # Optional on-demand base for availability during Spot reclamation. Defaults to 0
+  # (pure Spot); set fargate_base_count > 0 to keep N tasks always on-demand.
+  dynamic "capacity_provider_strategy" {
+    for_each = var.fargate_base_count > 0 ? [1] : []
+    content {
+      capacity_provider = "FARGATE"
+      weight            = 0
+      base              = var.fargate_base_count
+    }
+  }
 
   network_configuration {
     subnets          = var.private_subnet_ids
@@ -98,7 +117,10 @@ resource "aws_ecs_service" "app" {
     container_port   = 8000
   }
 
-  depends_on = [var.listener_rule_arn]
+  depends_on = [
+    var.listener_rule_arn,
+    aws_ecs_cluster_capacity_providers.main,
+  ]
 
   tags = {
     Name = "${var.project}-${var.environment}-service"

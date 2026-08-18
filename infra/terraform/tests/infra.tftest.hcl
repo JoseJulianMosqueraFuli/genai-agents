@@ -87,4 +87,34 @@ run "ecs_fargate_spot_strategy" {
     condition     = module.ecs.task_definition_family == "genai-agents-test"
     error_message = "Task definition family must follow project-environment"
   }
+
+  # The actual Spot guarantee: the service must run via the FARGATE_SPOT capacity
+  # provider strategy and must NOT pin launch_type (which would silently force
+  # on-demand and bypass Spot).
+  assert {
+    condition     = contains(module.ecs.capacity_providers, "FARGATE_SPOT")
+    error_message = "ECS service must use the FARGATE_SPOT capacity provider"
+  }
+  assert {
+    condition     = module.ecs.uses_launch_type == false
+    error_message = "ECS service must not set launch_type (it bypasses Spot)"
+  }
+}
+
+run "ecs_fargate_base_ondemand_optional" {
+  command = plan
+
+  variables {
+    project            = "genai-agents"
+    environment        = "test"
+    region             = "us-east-1"
+    llm_provider       = "bedrock"
+    fargate_base_count = 2
+  }
+
+  # With a non-zero base, both Spot and on-demand FARGATE providers are attached.
+  assert {
+    condition     = contains(module.ecs.capacity_providers, "FARGATE_SPOT") && contains(module.ecs.capacity_providers, "FARGATE")
+    error_message = "A non-zero base must add an on-demand FARGATE provider alongside Spot"
+  }
 }

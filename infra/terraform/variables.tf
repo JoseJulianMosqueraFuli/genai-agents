@@ -34,6 +34,18 @@ variable "desired_count" {
   default     = 1
 }
 
+variable "fargate_spot_weight" {
+  description = "Relative weight of FARGATE_SPOT in the service capacity provider strategy"
+  type        = number
+  default     = 100
+}
+
+variable "fargate_base_count" {
+  description = "Tasks to always run on on-demand FARGATE (0 = pure Spot)"
+  type        = number
+  default     = 0
+}
+
 variable "task_cpu" {
   description = "Task CPU units (0.5 vCPU = 512)"
   type        = number

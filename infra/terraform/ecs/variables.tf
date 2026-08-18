@@ -41,6 +41,18 @@ variable "desired_count" {
   default = 1
 }
 
+variable "fargate_spot_weight" {
+  type        = number
+  default     = 100
+  description = "Relative weight of FARGATE_SPOT in the service capacity provider strategy."
+}
+
+variable "fargate_base_count" {
+  type        = number
+  default     = 0
+  description = "Number of tasks to always run on on-demand FARGATE (0 = pure Spot)."
+}
+
 variable "task_cpu" {
   type    = number
   default = 512
@@ -84,6 +96,13 @@ variable "openai_api_key_secret_arn" {
 output "service_name" {
   value = aws_ecs_service.app.name
 }
+
+output "capacity_providers" {
+  description = "Capacity provider names used by the ECS service."
+  value       = [for s in aws_ecs_service.app.capacity_provider_strategy : s.capacity_provider]
+}
+
+
 
 output "cluster_name" {
   value = aws_ecs_cluster.main.name
