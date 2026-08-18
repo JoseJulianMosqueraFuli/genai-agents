@@ -1,11 +1,24 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.config import get_settings
+from app.logging_config import structured_log
 from app.pipeline import AgentPipeline
+from app.providers.base import LLMProviderError
 
 app = FastAPI(title="genai-agents", version="0.2.0")
 settings = get_settings()
+
+
+@app.exception_handler(LLMProviderError)
+async def llm_provider_error_handler(request: Request, exc: LLMProviderError) -> JSONResponse:
+    # Upstream model/provider failure — surface a clean 502 instead of a raw 500.
+    structured_log("ERROR", "provider.error", path=request.url.path, error=str(exc))
+    return JSONResponse(
+        status_code=502,
+        content={"error": "llm_provider_error", "detail": str(exc)},
+    )
 
 
 class AgentRequest(BaseModel):

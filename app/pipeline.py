@@ -17,7 +17,7 @@ from dataclasses import asdict, dataclass, field
 
 from app.agents.graph import build_graph
 from app.agents.memory import ConversationMemory, Turn, get_memory
-from app.agents.nodes import AnswerNode, RetrieverNode, Router
+from app.agents.nodes import AnswerNode, RetrieverNode
 from app.config import Settings, get_settings
 from app.costs.cache import ResponseCache
 from app.costs.tiering import ComplexityRouter
@@ -69,7 +69,7 @@ class AgentPipeline:
         self.provider = provider or get_provider()
         self.store = store or get_vector_store(self.provider, self.settings)
         self.graph = graph or build_graph(
-            RetrieverNode(self.provider, self.store), AnswerNode(self.provider), Router()
+            RetrieverNode(self.provider, self.store), AnswerNode(self.provider)
         )
         self.tier_router = tier_router or ComplexityRouter()
         self.cache = cache or ResponseCache(ttl_seconds=3600)
@@ -225,6 +225,9 @@ class AgentPipeline:
             return {"ingested": 0, "total": self.store.size}
         self._ensure_store_ready()
         await self.store.add_documents(documents, metadata=metadata)
+        # New documents change what retrieval returns, so cached answers are now
+        # stale — drop the response cache to avoid serving pre-ingest answers.
+        self.cache.clear()
         structured_log("INFO", "rag.ingest", count=len(documents), total=self.store.size)
         return {"ingested": len(documents), "total": self.store.size}
 

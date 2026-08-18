@@ -74,6 +74,20 @@ async def test_ingest_calls_ensure_index_once():
 
 
 @pytest.mark.asyncio
+async def test_ingest_invalidates_response_cache():
+    store = VectorStore(FakeProvider())
+    pipe = _pipeline(store)
+    # Seed a stale cached answer, then ingest new docs.
+    pipe.cache.set("old query", "m", {"answer": "stale"})
+    assert pipe.cache.stats()["size"] == 1
+
+    await pipe.ingest(["new doc"])
+
+    assert pipe.cache.stats()["size"] == 0
+    assert pipe.cache.get("old query", "m") is None
+
+
+@pytest.mark.asyncio
 async def test_ingest_passes_metadata_through():
     store = VectorStore(FakeProvider())
     pipe = _pipeline(store)

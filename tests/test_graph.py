@@ -1,7 +1,7 @@
 import pytest
 
 from app.agents.graph import build_graph
-from app.agents.nodes import AnswerNode, RetrieverNode, Router
+from app.agents.nodes import AnswerNode, RetrieverNode
 from app.providers.base import LLMProvider, LLMResponse, LLMUsage
 from app.rag.retriever import VectorStore
 
@@ -30,7 +30,7 @@ async def test_full_graph_invocation():
 
     retriever = RetrieverNode(provider, store)
     answerer = AnswerNode(provider)
-    graph = build_graph(retriever, answerer, Router())
+    graph = build_graph(retriever, answerer)
 
     state = {"query": "aws cloud", "use_rag": True}
     result = await graph.ainvoke(state)
@@ -48,7 +48,7 @@ async def test_empty_store_still_answers():
     store = VectorStore(provider, top_k=2)
     retriever = RetrieverNode(provider, store)
     answerer = AnswerNode(provider)
-    graph = build_graph(retriever, answerer, Router())
+    graph = build_graph(retriever, answerer)
 
     result = await graph.ainvoke({"query": "hello", "use_rag": True})
     assert result["answer"]
