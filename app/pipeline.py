@@ -28,6 +28,7 @@ from app.guards import inspect_input, inspect_output
 from app.logging_config import structured_log
 from app.providers.base import LLMProvider, LLMUsage
 from app.providers.factory import get_provider
+from app.rag.factory import get_vector_store
 from app.rag.retriever import VectorStore
 
 
@@ -67,7 +68,7 @@ class AgentPipeline:
     ) -> None:
         self.settings = settings or get_settings()
         self.provider = provider or get_provider()
-        self.store = store or VectorStore(self.provider)
+        self.store = store or get_vector_store(self.provider, self.settings)
         self.graph = graph or build_graph(
             RetrieverNode(self.provider, self.store), AnswerNode(self.provider), Router()
         )

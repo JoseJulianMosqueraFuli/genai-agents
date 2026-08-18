@@ -15,13 +15,29 @@ class Settings(BaseSettings):
 
     openai_api_key: str = ""
     bedrock_region: str = "us-east-1"
-    bedrock_model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1"
+    # Full-AWS default: Amazon Nova (generative). Bedrock usually requires the
+    # region-prefixed inference profile id (e.g. "us.amazon.nova-pro-v1:0").
+    bedrock_model_id: str = "us.amazon.nova-pro-v1:0"
 
     embedding_model: str = "text-embedding-3-small"
     embedding_provider: Literal["openai", "bedrock"] = "openai"
+    # Amazon Titan Text Embeddings V2 for the Bedrock path (Nova has no embeddings).
+    bedrock_embedding_model: str = "amazon.titan-embed-text-v2:0"
+    embedding_dimension: int = 1024
+
+    # Model tiering: cheap tier for short/factual queries, strong tier for reasoning.
+    # Bedrock uses Nova Micro (cheap) and bedrock_model_id / Nova Pro (strong).
+    openai_cheap_model: str = "gpt-4o-mini"
+    bedrock_cheap_model: str = "us.amazon.nova-micro-v1:0"
 
     enable_guardrails: bool = True
     max_context_tokens: int = 4000
+
+    # RAG retrieval: "in_memory" (default) or "s3_vectors" (Amazon S3 Vectors).
+    vector_backend: Literal["in_memory", "s3_vectors"] = "in_memory"
+    s3_vectors_bucket: str = ""
+    s3_vectors_index: str = ""
+    retrieval_top_k: int = 4
 
     # Conversation memory: "in_memory" (default) or "agentcore" (Bedrock AgentCore Memory).
     memory_backend: Literal["in_memory", "agentcore"] = "in_memory"
