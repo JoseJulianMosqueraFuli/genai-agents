@@ -4,6 +4,8 @@ from typing import List, TypedDict
 class AgentState(TypedDict, total=False):
     query: str
     context: str
+    history: str
+    session_id: str
     answer: str
     claims: List[str]
     provider: str

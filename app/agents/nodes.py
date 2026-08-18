@@ -53,8 +53,10 @@ class AnswerNode:
     async def run(self, state: AgentState) -> AgentState:
         query = state["query"]
         context = state.get("context", "")
+        history = state.get("history", "")
         system = ANSWER_SYSTEM
-        user = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
+        history_block = f"Conversation so far:\n{history}\n\n" if history else ""
+        user = f"{history_block}Context:\n{context}\n\nQuestion: {query}\nAnswer:"
         resp = await self.provider.generate(system, user)
         state["answer"] = resp.text
         state["provider"] = self.provider.name

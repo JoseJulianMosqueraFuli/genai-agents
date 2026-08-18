@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     enable_guardrails: bool = True
     max_context_tokens: int = 4000
 
+    # Conversation memory: "in_memory" (default) or "agentcore" (Bedrock AgentCore Memory).
+    memory_backend: Literal["in_memory", "agentcore"] = "in_memory"
+    agentcore_memory_id: str = ""
+    # Max prior turns injected into the prompt for multi-turn coherence.
+    memory_window: int = 6
+
     cost_per_1k_input_tokens: float = 0.00015
     cost_per_1k_output_tokens: float = 0.0006
 
