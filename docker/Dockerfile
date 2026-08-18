@@ -11,7 +11,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_LINK_MODE=copy \
     PATH="/app/.venv/bin:$PATH"
 
-# Install runtime deps only (no dev group) as a cached layer.
+# Build from the repo root as context (see docker/docker-compose.yml or use
+# `docker build -f docker/Dockerfile .`). Install runtime deps only as a cached layer.
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 

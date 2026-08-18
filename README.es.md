@@ -63,14 +63,14 @@ curl -s http://localhost:8000/v1/agents/chat \
 ### Docker
 
 ```bash
-docker compose up --build
+docker compose -f docker/docker-compose.yml up --build
 # API → http://localhost:8000   health → /health
 ```
 
 ### Tests
 
 ```bash
-docker compose run --rm test-api        # o:
+docker compose -f docker/docker-compose.yml run --rm test-api   # o:
 uv run pytest tests/ -v
 ```
 

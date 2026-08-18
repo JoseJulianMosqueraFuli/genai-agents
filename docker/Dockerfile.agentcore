@@ -6,6 +6,7 @@
 #
 # The `agentcore` starter toolkit can build/push this for you (`agentcore launch`);
 # this Dockerfile is provided for manual builds and CI parity.
+# Build from the repo root: `docker build -f docker/Dockerfile.agentcore .`
 FROM python:3.12-slim
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/

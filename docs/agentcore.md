@@ -71,7 +71,7 @@ Local dev and CI keep the in-memory backend, so tests never touch AWS.
 ## Manual container build
 
 ```bash
-docker build -f Dockerfile.agentcore -t genai-agents-agentcore .
+docker build -f docker/Dockerfile.agentcore -t genai-agents-agentcore .
 docker run -p 8080:8080 --env-file .env genai-agents-agentcore
 curl -s localhost:8080/ping
 curl -s localhost:8080/invocations -d '{"prompt":"What is Kubernetes?"}'
