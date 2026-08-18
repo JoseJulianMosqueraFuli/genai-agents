@@ -79,7 +79,7 @@ class AgentCoreMemory(ConversationMemory):
         except ImportError as exc:  # pragma: no cover - exercised only when SDK missing
             raise RuntimeError(
                 "AgentCoreMemory requires the 'bedrock-agentcore' package. "
-                "Install it with: pip install bedrock-agentcore"
+                "Install it with: uv sync --extra agentcore"
             ) from exc
 
         self.memory_id = memory_id

@@ -47,9 +47,12 @@ La mayoría de demos GenAI se quedan en "llamar a un LLM". Este está construido
 
 ```bash
 cp .env.example .env   # llena OPENAI_API_KEY (o cambia a BEDROCK)
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+uv sync                # crea .venv desde pyproject.toml + uv.lock
+uv run uvicorn app.main:app --reload
 ```
+
+> Usa [uv](https://docs.astral.sh/uv/) para gestionar dependencias. Instálalo con
+> `curl -LsSf https://astral.sh/uv/install.sh | sh` (o `pipx install uv`).
 
 ```bash
 curl -s http://localhost:8000/v1/agents/chat \
@@ -68,7 +71,7 @@ docker compose up --build
 
 ```bash
 docker compose run --rm test-api        # o:
-pytest tests/ -v
+uv run pytest tests/ -v
 ```
 
 ## API
@@ -97,7 +100,12 @@ pytest tests/ -v
 ### `GET /health`
 
 ```json
-{ "status": "ok", "app": "genai-agents", "provider": "openai", "guardrails": true }
+{
+  "status": "ok",
+  "app": "genai-agents",
+  "provider": "openai",
+  "guardrails": true
+}
 ```
 
 ## Roadmap

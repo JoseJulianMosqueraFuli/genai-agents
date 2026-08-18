@@ -50,9 +50,12 @@ Most GenAI demos stop at "call an LLM". This one is built like a production serv
 
 ```bash
 cp .env.example .env   # fill OPENAI_API_KEY (or switch to BEDROCK)
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+uv sync                # creates .venv from pyproject.toml + uv.lock
+uv run uvicorn app.main:app --reload
 ```
+
+> Uses [uv](https://docs.astral.sh/uv/) for dependency management. Install it with
+> `curl -LsSf https://astral.sh/uv/install.sh | sh` (or `pipx install uv`).
 
 ```bash
 # 1. Ingest documents into the RAG store
@@ -77,7 +80,7 @@ docker compose up --build
 
 ```bash
 docker compose run --rm test-api        # or:
-pytest tests/ -v
+uv run pytest tests/ -v
 ```
 
 ## Configuration (`.env`)
@@ -209,10 +212,12 @@ In production you wire the `EvalRunner` to the real agent and block the pipeline
 - [x] Serve on Amazon Bedrock AgentCore Runtime (managed, session-isolated)
 - [x] Managed vector store — Amazon S3 Vectors (via SDK) with Titan v2 embeddings
 - [x] Full-AWS model stack — Amazon Nova (generation) + Titan Text Embeddings V2
+- [ ] Document chunking + file upload for ingestion (`POST /v1/documents` currently takes pre-chunked text)
 - [ ] Evaluation with RAGAS-style metrics and a regression dataset
 - [ ] Model A/B routing and canary deployments
 - [ ] Guardrail-as-code policies (budget caps, topic allowlists)
 - [ ] AgentCore Gateway (expose tools as MCP) + AgentCore Identity
+- [ ] Lint/format with `ruff` (config in `pyproject.toml`) wired into CI
 - [ ] Prometheus metrics for latency, cost and eval drift
 
 ## Deploy on AWS (ECS Fargate Spot)
@@ -235,7 +240,7 @@ Runtime** via `app/runtime/agentcore_app.py`. Both paths run the identical
 `AgentPipeline`, so behaviour never diverges.
 
 ```bash
-pip install -r requirements.txt -r requirements-agentcore.txt
+uv sync --extra agentcore
 agentcore configure --entrypoint app/runtime/agentcore_app.py
 agentcore launch
 agentcore invoke '{"prompt": "What is Kubernetes?"}'

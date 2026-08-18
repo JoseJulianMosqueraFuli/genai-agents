@@ -86,7 +86,7 @@ def build_app():
     if BedrockAgentCoreApp is None:
         raise RuntimeError(
             "AgentCore Runtime requires the 'bedrock-agentcore' package. "
-            "Install it with: pip install -r requirements-agentcore.txt"
+            "Install it with: uv sync --extra agentcore"
         )
 
     app = BedrockAgentCoreApp()

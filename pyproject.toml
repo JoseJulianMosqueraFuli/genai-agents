@@ -30,12 +30,26 @@ dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
     "httpx>=0.24.0",
+    "ruff>=0.6.0",
 ]
 
 [tool.uv]
 # This is an application (code lives in ./app and is copied into the image), not an
 # installable library — uv manages the environment/deps only and does not build it.
 package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+# pycodestyle errors/warnings, pyflakes, isort, pyupgrade, flake8-bugbear.
+select = ["E", "W", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests define fake providers with unused **kwargs and reimport fixtures freely.
+"tests/**" = ["B", "F811"]
 
 [tool.pytest.ini_options]
 # Make the repo root importable so `import app...` works under a bare `pytest`

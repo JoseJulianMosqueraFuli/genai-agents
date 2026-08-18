@@ -38,7 +38,7 @@ carries the session id used for memory affinity).
 ## Deploy with the starter toolkit
 
 ```bash
-pip install -r requirements.txt -r requirements-agentcore.txt
+uv sync --extra agentcore
 
 # 1. Configure (points at the entrypoint module + builds an ARM64 image)
 agentcore configure --entrypoint app/runtime/agentcore_app.py
