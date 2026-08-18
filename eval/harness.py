@@ -1,9 +1,6 @@
 import json
-import sys
 from collections.abc import Awaitable, Callable
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from app.eval.metrics import answer_relevance, faithfulness
 
