@@ -20,7 +20,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from typing import Deque, Dict, List
 
 from app.config import get_settings
 from app.logging_config import structured_log
@@ -40,7 +39,7 @@ class ConversationMemory(ABC):
         """Record a single turn for a session."""
 
     @abstractmethod
-    def history(self, session_id: str) -> List[Turn]:
+    def history(self, session_id: str) -> list[Turn]:
         """Return the ordered turns for a session (oldest first)."""
 
     def render(self, session_id: str) -> str:
@@ -57,12 +56,12 @@ class InMemoryConversationMemory(ConversationMemory):
 
     def __init__(self, max_turns: int = 20) -> None:
         self.max_turns = max_turns
-        self._store: Dict[str, Deque[Turn]] = defaultdict(lambda: deque(maxlen=max_turns))
+        self._store: dict[str, deque[Turn]] = defaultdict(lambda: deque(maxlen=max_turns))
 
     def append(self, session_id: str, role: str, content: str) -> None:
         self._store[session_id].append(Turn(role=role, content=content))
 
-    def history(self, session_id: str) -> List[Turn]:
+    def history(self, session_id: str) -> list[Turn]:
         return list(self._store.get(session_id, ()))
 
 
@@ -94,16 +93,21 @@ class AgentCoreMemory(ConversationMemory):
             messages=[(content, role.upper())],
         )
 
-    def history(self, session_id: str) -> List[Turn]:
+    def history(self, session_id: str) -> list[Turn]:
         events = self._client.list_events(
             memory_id=self.memory_id,
             actor_id=self.actor_id,
             session_id=session_id,
         )
-        turns: List[Turn] = []
+        turns: list[Turn] = []
         for event in events or []:
             for message in event.get("messages", []):
-                turns.append(Turn(role=str(message.get("role", "user")).lower(), content=message.get("content", "")))
+                turns.append(
+                    Turn(
+                        role=str(message.get("role", "user")).lower(),
+                        content=message.get("content", ""),
+                    )
+                )
         return turns
 
 
@@ -119,7 +123,9 @@ def get_memory() -> ConversationMemory:
     settings = get_settings()
     backend = settings.memory_backend
     if backend == "agentcore" and settings.agentcore_memory_id:
-        structured_log("INFO", "memory.backend", backend="agentcore", memory_id=settings.agentcore_memory_id)
+        structured_log(
+            "INFO", "memory.backend", backend="agentcore", memory_id=settings.agentcore_memory_id
+        )
         _memory_singleton = AgentCoreMemory(
             memory_id=settings.agentcore_memory_id,
             region=settings.bedrock_region,

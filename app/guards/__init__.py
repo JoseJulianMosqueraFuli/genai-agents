@@ -1,6 +1,6 @@
 from app.config import get_settings
-from app.guards.base import GuardrailResult
 from app.guards import injection, pii
+from app.guards.base import GuardrailResult
 
 
 def inspect_input(text: str) -> GuardrailResult:

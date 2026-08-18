@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
@@ -22,7 +20,7 @@ class AgentResponse(BaseModel):
     provider: str
     model: str
     session_id: str = "default"
-    context_sources: List[str] = []
+    context_sources: list[str] = []
     eval_scores: dict = {}
     usage: dict = {}
     cost_usd: float = 0.0
@@ -41,7 +39,7 @@ class Document(BaseModel):
 
 
 class IngestRequest(BaseModel):
-    documents: List[Document] = Field(..., min_length=1, max_length=500)
+    documents: list[Document] = Field(..., min_length=1, max_length=500)
 
 
 class IngestResponse(BaseModel):

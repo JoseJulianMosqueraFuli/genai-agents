@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import time
 from dataclasses import asdict, dataclass, field
-from typing import List, Optional
 
 from app.agents.graph import build_graph
 from app.agents.memory import ConversationMemory, Turn, get_memory
@@ -39,7 +38,7 @@ class AgentResult:
     provider: str
     model: str
     session_id: str = "default"
-    context_sources: List[str] = field(default_factory=list)
+    context_sources: list[str] = field(default_factory=list)
     eval_scores: dict = field(default_factory=dict)
     usage: dict = field(default_factory=dict)
     cost_usd: float = 0.0
@@ -58,13 +57,13 @@ class AgentPipeline:
     def __init__(
         self,
         *,
-        provider: Optional[LLMProvider] = None,
-        store: Optional[VectorStore] = None,
+        provider: LLMProvider | None = None,
+        store: VectorStore | None = None,
         graph=None,
-        tier_router: Optional[ComplexityRouter] = None,
-        cache: Optional[ResponseCache] = None,
-        memory: Optional[ConversationMemory] = None,
-        settings: Optional[Settings] = None,
+        tier_router: ComplexityRouter | None = None,
+        cache: ResponseCache | None = None,
+        memory: ConversationMemory | None = None,
+        settings: Settings | None = None,
     ) -> None:
         self.settings = settings or get_settings()
         self.provider = provider or get_provider()
@@ -77,7 +76,9 @@ class AgentPipeline:
         self.memory = memory if memory is not None else get_memory()
         self._index_ready = False
 
-    async def run(self, query: str, use_rag: bool = True, session_id: str = "default") -> AgentResult:
+    async def run(
+        self, query: str, use_rag: bool = True, session_id: str = "default"
+    ) -> AgentResult:
         started = time.monotonic()
 
         guard = inspect_input(query)
@@ -100,8 +101,14 @@ class AgentPipeline:
         if cached is not None:
             latency_ms = self._elapsed_ms(started)
             structured_log(
-                "INFO", "agent.chat", query_len=len(query), latency_ms=latency_ms,
-                cost_usd=0.0, cache_hit=True, tier=tier.tier, session_id=session_id,
+                "INFO",
+                "agent.chat",
+                query_len=len(query),
+                latency_ms=latency_ms,
+                cost_usd=0.0,
+                cache_hit=True,
+                tier=tier.tier,
+                session_id=session_id,
             )
             return AgentResult(
                 query=query,
@@ -128,7 +135,9 @@ class AgentPipeline:
             answer = sanitized
 
         context = result.get("context", "")
-        sources = [line.split("]", 1)[0].strip("[]") for line in context.splitlines() if line.strip()]
+        sources = [
+            line.split("]", 1)[0].strip("[]") for line in context.splitlines() if line.strip()
+        ]
 
         claims = answer.split(". ")
         eval_results = evaluate_answer(
@@ -145,7 +154,9 @@ class AgentPipeline:
             input_price_per_1k=self.settings.cost_per_1k_input_tokens,
             output_price_per_1k=self.settings.cost_per_1k_output_tokens,
         )
-        tracker.add(LLMUsage(input_tokens=usage["input_tokens"], output_tokens=usage["output_tokens"]))
+        tracker.add(
+            LLMUsage(input_tokens=usage["input_tokens"], output_tokens=usage["output_tokens"])
+        )
         cost = tracker.estimate()
 
         # Persist the turn so follow-up questions in the same session stay coherent.
@@ -154,21 +165,31 @@ class AgentPipeline:
 
         latency_ms = self._elapsed_ms(started)
         structured_log(
-            "INFO", "agent.chat", query_len=len(query), latency_ms=latency_ms,
-            cost_usd=cost.total, cache_hit=False, tier=tier.tier, session_id=session_id,
+            "INFO",
+            "agent.chat",
+            query_len=len(query),
+            latency_ms=latency_ms,
+            cost_usd=cost.total,
+            cache_hit=False,
+            tier=tier.tier,
+            session_id=session_id,
         )
 
         provider_name = result.get("provider", self.settings.llm_provider)
         model_name = result.get("model", self.settings.llm_model)
 
-        self.cache.set(query, model, {
-            "answer": answer,
-            "provider": provider_name,
-            "model": model_name,
-            "context_sources": sources,
-            "eval_scores": eval_scores,
-            "usage": usage,
-        })
+        self.cache.set(
+            query,
+            model,
+            {
+                "answer": answer,
+                "provider": provider_name,
+                "model": model_name,
+                "context_sources": sources,
+                "eval_scores": eval_scores,
+                "usage": usage,
+            },
+        )
 
         return AgentResult(
             query=query,
@@ -194,7 +215,7 @@ class AgentPipeline:
             ensure()
         self._index_ready = True
 
-    async def ingest(self, documents: List[str], metadata: Optional[List[dict]] = None) -> dict:
+    async def ingest(self, documents: list[str], metadata: list[dict] | None = None) -> dict:
         """Embed and store documents into the vector backend.
 
         This is the "how data gets into RAG" path: for S3 Vectors it also creates the
@@ -208,10 +229,10 @@ class AgentPipeline:
         return {"ingested": len(documents), "total": self.store.size}
 
     def _render_history(self, session_id: str) -> str:
-        turns: List[Turn] = self.memory.history(session_id)
+        turns: list[Turn] = self.memory.history(session_id)
         if not turns:
             return ""
-        window = turns[-self.settings.memory_window:]
+        window = turns[-self.settings.memory_window :]
         return "\n".join(f"{t.role.capitalize()}: {t.content}" for t in window)
 
     @staticmethod

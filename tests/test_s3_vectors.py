@@ -4,8 +4,6 @@ No network, no AWS: a fake ``s3vectors`` client records writes and returns canne
 query hits, so we exercise the full add/search mapping without boto3 or credentials.
 """
 
-from typing import List
-
 import pytest
 
 from app.providers.base import LLMProvider, LLMResponse, LLMUsage
@@ -18,9 +16,11 @@ class FakeProvider(LLMProvider):
     async def generate(self, system: str, user: str, **kwargs) -> LLMResponse:
         return LLMResponse(text="x", usage=LLMUsage(1, 1), model="fake")
 
-    async def embed(self, texts: List[str]) -> List[List[float]]:
+    async def embed(self, texts: list[str]) -> list[list[float]]:
         # deterministic 2-dim embeddings
-        return [[1.0 if "aws" in t.lower() else 0.0, 1.0 if "k8s" in t.lower() else 0.0] for t in texts]
+        return [
+            [1.0 if "aws" in t.lower() else 0.0, 1.0 if "k8s" in t.lower() else 0.0] for t in texts
+        ]
 
 
 class FakeS3VectorsClient:
@@ -80,7 +80,11 @@ async def test_add_documents_batches_over_500():
 @pytest.mark.asyncio
 async def test_search_maps_hits_to_retrieved_docs():
     hits = [
-        {"key": "k1", "distance": 0.1, "metadata": {"text": "AWS is a cloud platform", "src": "doc1"}},
+        {
+            "key": "k1",
+            "distance": 0.1,
+            "metadata": {"text": "AWS is a cloud platform", "src": "doc1"},
+        },
         {"key": "k2", "distance": 0.4, "metadata": {"text": "K8s orchestrates containers"}},
     ]
     client = FakeS3VectorsClient(query_hits=hits)

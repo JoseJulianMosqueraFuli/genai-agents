@@ -1,5 +1,4 @@
 import json
-from typing import List
 
 import boto3
 
@@ -56,10 +55,10 @@ class BedrockProvider(LLMProvider):
             structured_log("ERROR", "bedrock.generate.error", error=str(e))
             raise LLMProviderError(str(e)) from e
 
-    async def embed(self, texts: List[str]) -> List[List[float]]:
+    async def embed(self, texts: list[str]) -> list[list[float]]:
         # Titan Text Embeddings V2 embeds one input per invocation.
         try:
-            vectors: List[List[float]] = []
+            vectors: list[list[float]] = []
             for text in texts:
                 body = json.dumps(
                     {
@@ -76,9 +75,7 @@ class BedrockProvider(LLMProvider):
                 )
                 data = json.loads(resp["body"].read())
                 vectors.append(data["embedding"])
-            structured_log(
-                "INFO", "bedrock.embed", model=self.embedding_model, count=len(vectors)
-            )
+            structured_log("INFO", "bedrock.embed", model=self.embedding_model, count=len(vectors))
             return vectors
         except Exception as e:
             structured_log("ERROR", "bedrock.embed.error", error=str(e))

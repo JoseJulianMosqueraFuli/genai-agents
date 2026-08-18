@@ -1,5 +1,3 @@
-from typing import List
-
 import pytest
 
 from app.agents.graph import build_graph
@@ -16,9 +14,11 @@ class FakeProvider(LLMProvider):
     }
 
     async def generate(self, system: str, user: str, **kwargs) -> LLMResponse:
-        return LLMResponse(text="A grounded answer about the context", usage=LLMUsage(20, 30), model="fake")
+        return LLMResponse(
+            text="A grounded answer about the context", usage=LLMUsage(20, 30), model="fake"
+        )
 
-    async def embed(self, texts: List[str]) -> List[List[float]]:
+    async def embed(self, texts: list[str]) -> list[list[float]]:
         return [self._embeds.get(t.lower(), [0.0, 0.0]) for t in texts]
 
 

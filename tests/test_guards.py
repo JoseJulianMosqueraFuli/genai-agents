@@ -1,7 +1,5 @@
-import pytest
-
 from app.guards import inspect_input, inspect_output
-from app.guards.pii import scan_pii, redact_pii
+from app.guards.pii import redact_pii, scan_pii
 
 
 class TestPIIScan:

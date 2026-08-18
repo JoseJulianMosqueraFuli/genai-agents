@@ -7,15 +7,13 @@ the agent code — the pipeline only talks to the `VectorStore` contract.
 
 from __future__ import annotations
 
-from typing import Optional
-
 from app.config import Settings, get_settings
 from app.logging_config import structured_log
 from app.providers.base import LLMProvider
 from app.rag.retriever import VectorStore
 
 
-def get_vector_store(provider: LLMProvider, settings: Optional[Settings] = None):
+def get_vector_store(provider: LLMProvider, settings: Settings | None = None):
     """Return the configured vector store backend."""
     settings = settings or get_settings()
 
@@ -23,8 +21,11 @@ def get_vector_store(provider: LLMProvider, settings: Optional[Settings] = None)
         from app.rag.s3_vectors import S3VectorStore
 
         structured_log(
-            "INFO", "rag.backend", backend="s3_vectors",
-            bucket=settings.s3_vectors_bucket, index=settings.s3_vectors_index,
+            "INFO",
+            "rag.backend",
+            backend="s3_vectors",
+            bucket=settings.s3_vectors_bucket,
+            index=settings.s3_vectors_index,
         )
         return S3VectorStore(
             provider,

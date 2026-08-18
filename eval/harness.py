@@ -1,14 +1,14 @@
 import json
 import sys
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Awaitable, Callable, List
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from app.eval.metrics import answer_relevance, faithfulness
 
 
-def load_eval_dataset() -> List[dict]:
+def load_eval_dataset() -> list[dict]:
     path = Path(__file__).resolve().parent / "dataset" / "qa.json"
     with open(path) as f:
         return json.load(f)["questions"]
@@ -29,7 +29,7 @@ class EvalRunner:
         """Placeholder for tests; returns the query (not a real LLM call)."""
         return query
 
-    async def run(self, dataset: List[dict]) -> List[dict]:
+    async def run(self, dataset: list[dict]) -> list[dict]:
         results = []
         for item in dataset:
             answer = await self.answerer(item["query"])
@@ -57,7 +57,7 @@ class ReleaseGate:
         self.min_faithfulness = min_faithfulness
         self.min_relevance = min_relevance
 
-    def evaluate(self, results: List[dict]) -> dict:
+    def evaluate(self, results: list[dict]) -> dict:
         avg_f = sum(r["faithfulness"] for r in results) / len(results)
         avg_r = sum(r["relevance"] for r in results) / len(results)
         per_category = {}
@@ -76,7 +76,9 @@ class ReleaseGate:
             "per_category": {
                 cat: {
                     "count": len(items),
-                    "avg_faithfulness": round(sum(i["faithfulness"] for i in items) / len(items), 3),
+                    "avg_faithfulness": round(
+                        sum(i["faithfulness"] for i in items) / len(items), 3
+                    ),
                 }
                 for cat, items in per_category.items()
             },

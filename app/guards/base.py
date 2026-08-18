@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from typing import Dict, List
 
 
 @dataclass
 class GuardrailResult:
     allowed: bool
-    reasons: List[str] = None
+    reasons: list[str] = None
 
     def __post_init__(self) -> None:
         if self.reasons is None:

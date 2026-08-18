@@ -29,7 +29,7 @@ Deploy with the starter toolkit (see docs/agentcore.md)::
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from app.logging_config import structured_log
 from app.pipeline import AgentPipeline
@@ -40,7 +40,7 @@ except ImportError:  # pragma: no cover - exercised only when SDK is absent
     BedrockAgentCoreApp = None  # type: ignore[assignment]
 
 
-_pipeline: Optional[AgentPipeline] = None
+_pipeline: AgentPipeline | None = None
 
 
 def get_pipeline() -> AgentPipeline:

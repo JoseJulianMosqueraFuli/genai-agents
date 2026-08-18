@@ -1,8 +1,22 @@
 import re
 from dataclasses import dataclass
-from typing import List
 
-_STOPWORDS = {"the", "a", "an", "is", "are", "of", "to", "in", "and", "or", "for", "with", "on", "at"}
+_STOPWORDS = {
+    "the",
+    "a",
+    "an",
+    "is",
+    "are",
+    "of",
+    "to",
+    "in",
+    "and",
+    "or",
+    "for",
+    "with",
+    "on",
+    "at",
+}
 
 
 def _tokens(text: str) -> set[str]:
@@ -17,7 +31,7 @@ class EvalResult:
     threshold: float
 
 
-def faithfulness(claims: List[str], context: str) -> float:
+def faithfulness(claims: list[str], context: str) -> float:
     """Fraction of model claims whose content words appear in the retrieved context."""
     if not claims:
         return 0.0
@@ -47,7 +61,9 @@ def answer_relevance(answer: str, query: str) -> float:
     return len(overlap) / len(query_tokens)
 
 
-def evaluate_answer(answer: str, query: str, context: str, claims: List[str], threshold: float = 0.7) -> List[EvalResult]:
+def evaluate_answer(
+    answer: str, query: str, context: str, claims: list[str], threshold: float = 0.7
+) -> list[EvalResult]:
     f = faithfulness(claims, context)
     r = answer_relevance(answer, query)
     return [

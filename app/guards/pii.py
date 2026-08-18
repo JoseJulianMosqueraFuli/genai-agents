@@ -1,8 +1,6 @@
 import re
-from typing import List
 
 from app.guards.base import GuardrailResult
-
 
 EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
 PHONE_RE = re.compile(
@@ -12,8 +10,8 @@ CREDIT_CARD_RE = re.compile(r"\b(?:\d[ -]*?){13,16}\b")
 SSN_RE = re.compile(r"\b\d{3}-\d{2}-\d{4}\b")
 
 
-def scan_pii(text: str) -> List[str]:
-    hits: List[str] = []
+def scan_pii(text: str) -> list[str]:
+    hits: list[str] = []
     if EMAIL_RE.search(text):
         hits.append("email")
     if PHONE_RE.search(text):

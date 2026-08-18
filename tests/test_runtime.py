@@ -16,7 +16,9 @@ class FakePipeline:
     def __init__(self):
         self.calls = []
 
-    async def run(self, query: str, use_rag: bool = True, session_id: str = "default") -> AgentResult:
+    async def run(
+        self, query: str, use_rag: bool = True, session_id: str = "default"
+    ) -> AgentResult:
         self.calls.append({"query": query, "use_rag": use_rag, "session_id": session_id})
         return AgentResult(
             query=query,
@@ -63,7 +65,9 @@ async def test_handle_rejects_empty_prompt(fake_pipeline):
 
 @pytest.mark.asyncio
 async def test_runtime_context_session_overrides_payload(fake_pipeline):
-    await agentcore_app.handle({"prompt": "hi", "session_id": "from-payload"}, FakeContext("from-runtime"))
+    await agentcore_app.handle(
+        {"prompt": "hi", "session_id": "from-payload"}, FakeContext("from-runtime")
+    )
     assert fake_pipeline.calls[-1]["session_id"] == "from-runtime"
 
 

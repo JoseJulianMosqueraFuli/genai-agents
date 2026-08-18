@@ -3,7 +3,6 @@ from app.config import get_settings
 from app.logging_config import structured_log
 from app.providers.base import LLMProvider
 
-
 RETRIEVE_SYSTEM = (
     "You are a retrieval specialist. Given a question, rewrite it into a compact, "
     "search-friendly query that captures the user's intent for a vector database."

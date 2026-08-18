@@ -1,7 +1,7 @@
 import hashlib
 import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -24,14 +24,14 @@ class ResponseCache:
 
     def __init__(self, ttl_seconds: int = 3600) -> None:
         self.ttl_seconds = ttl_seconds
-        self._store: Dict[str, CacheEntry] = {}
+        self._store: dict[str, CacheEntry] = {}
         self.hits = 0
         self.misses = 0
 
     def _key(self, query: str, model: str) -> str:
         return hashlib.sha256(f"{model}::{query.strip().lower()}".encode()).hexdigest()
 
-    def get(self, query: str, model: str) -> Optional[Any]:
+    def get(self, query: str, model: str) -> Any | None:
         key = self._key(query, model)
         entry = self._store.get(key)
         if entry is None:
@@ -46,7 +46,9 @@ class ResponseCache:
 
     def set(self, query: str, model: str, value: Any) -> None:
         key = self._key(query, model)
-        self._store[key] = CacheEntry(value=value, created_at=time.time(), ttl_seconds=self.ttl_seconds)
+        self._store[key] = CacheEntry(
+            value=value, created_at=time.time(), ttl_seconds=self.ttl_seconds
+        )
 
     def stats(self) -> dict:
         total = self.hits + self.misses

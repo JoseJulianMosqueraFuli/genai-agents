@@ -23,7 +23,7 @@ talk to AWS) don't need credentials; tests inject a fake client.
 from __future__ import annotations
 
 import uuid
-from typing import Any, List, Optional
+from typing import Any
 
 from app.logging_config import structured_log
 from app.providers.base import LLMProvider
@@ -45,7 +45,7 @@ class S3VectorStore:
         bucket: str,
         index: str,
         top_k: int = 4,
-        region: Optional[str] = None,
+        region: str | None = None,
         dimension: int = 1024,
         distance_metric: str = "cosine",
         client: Any = None,
@@ -96,12 +96,12 @@ class S3VectorStore:
         except Exception as exc:  # index already exists / conflict is fine
             structured_log("INFO", "s3vectors.index.exists", detail=str(exc))
 
-    async def add_documents(self, texts: List[str], metadata: List[dict] | None = None) -> None:
+    async def add_documents(self, texts: list[str], metadata: list[dict] | None = None) -> None:
         if not texts:
             return
         vectors = await self.provider.embed(texts)
         items = []
-        for i, (text, vector) in enumerate(zip(texts, vectors)):
+        for i, (text, vector) in enumerate(zip(texts, vectors, strict=False)):
             meta = dict((metadata or [{}] * len(texts))[i]) if metadata else {}
             meta[_TEXT_KEY] = text
             items.append(
@@ -116,7 +116,7 @@ class S3VectorStore:
         self._count += len(items)
         structured_log("INFO", "rag.add_documents", backend="s3_vectors", count=len(items))
 
-    async def search(self, query: str) -> List[RetrievedDoc]:
+    async def search(self, query: str) -> list[RetrievedDoc]:
         query_vector = (await self.provider.embed([query]))[0]
         resp = self.client.query_vectors(
             vectorBucketName=self.bucket,
@@ -126,7 +126,7 @@ class S3VectorStore:
             returnMetadata=True,
             returnDistance=True,
         )
-        results: List[RetrievedDoc] = []
+        results: list[RetrievedDoc] = []
         for hit in resp.get("vectors", []):
             meta = hit.get("metadata", {}) or {}
             text = meta.get(_TEXT_KEY, "")
@@ -138,7 +138,9 @@ class S3VectorStore:
                     metadata={k: v for k, v in meta.items() if k != _TEXT_KEY},
                 )
             )
-        structured_log("INFO", "rag.search", backend="s3_vectors", query_len=len(query), hits=len(results))
+        structured_log(
+            "INFO", "rag.search", backend="s3_vectors", query_len=len(query), hits=len(results)
+        )
         return results
 
     def _to_score(self, distance: Any) -> float:

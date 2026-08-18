@@ -77,7 +77,7 @@ from app.providers.factory import get_provider
 from app.rag.factory import get_vector_store
 
 store = get_vector_store(get_provider())
-store.ensure_index()                     # idempotent: bucket + index
+store.ensure_index()  # idempotent: bucket + index
 await store.add_documents(["<your document chunks>"])
 ```
 

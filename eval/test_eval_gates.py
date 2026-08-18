@@ -1,7 +1,6 @@
 import json
 import sys
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -10,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from app.eval.metrics import answer_relevance, faithfulness
 
 
-def load_eval_dataset() -> List[dict]:
+def load_eval_dataset() -> list[dict]:
     path = Path(__file__).resolve().parent / "dataset" / "qa.json"
     with open(path) as f:
         return json.load(f)["questions"]

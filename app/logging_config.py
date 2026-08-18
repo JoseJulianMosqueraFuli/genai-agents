@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import Any, Dict
+from typing import Any
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -18,6 +18,6 @@ def get_logger(name: str) -> logging.Logger:
 
 
 def structured_log(level: str, event: str, **fields: Any) -> None:
-    record: Dict[str, Any] = {"event": event, **fields}
+    record: dict[str, Any] = {"event": event, **fields}
     logger = get_logger("genai_agents")
     getattr(logger, level.lower())(str(record))

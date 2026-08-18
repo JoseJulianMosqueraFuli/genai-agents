@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List
 
 
 @dataclass
@@ -42,5 +41,5 @@ class LLMProvider(ABC):
         """Generate a completion from a system prompt and a user prompt."""
 
     @abstractmethod
-    async def embed(self, texts: List[str]) -> List[List[float]]:
+    async def embed(self, texts: list[str]) -> list[list[float]]:
         """Embed a batch of texts into vectors."""

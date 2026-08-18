@@ -1,7 +1,6 @@
 import pytest
 
 from app.agents.nodes import Router
-from app.agents.state import AgentState
 from app.eval.cost import CostTracker
 from app.eval.metrics import answer_relevance, evaluate_answer, faithfulness
 from app.providers.base import LLMUsage
@@ -36,14 +35,27 @@ class TestCostTracker:
 
 class TestMetrics:
     def test_faithfulness_grounded_claims(self):
-        assert faithfulness(["Kubernetes orchestrates containers"], "Kubernetes orchestrates containers and scales them") == 1.0
+        assert (
+            faithfulness(
+                ["Kubernetes orchestrates containers"],
+                "Kubernetes orchestrates containers and scales them",
+            )
+            == 1.0
+        )
 
     def test_faithfulness_hallucination(self):
         assert faithfulness(["The moon is made of cheese"], "Kubernetes docs") == 0.0
 
     def test_answer_relevance_overlap(self):
-        assert answer_relevance("Kubernetes is a container orchestrator", "What is Kubernetes?") >= 0.5
+        assert (
+            answer_relevance("Kubernetes is a container orchestrator", "What is Kubernetes?") >= 0.5
+        )
 
     def test_evaluate_answer_returns_metrics(self):
-        results = evaluate_answer("K8s orchestrates", "What is Kubernetes?", "K8s orchestrates containers", ["K8s orchestrates"])
+        results = evaluate_answer(
+            "K8s orchestrates",
+            "What is Kubernetes?",
+            "K8s orchestrates containers",
+            ["K8s orchestrates"],
+        )
         assert {r.metric for r in results} == {"faithfulness", "answer_relevance"}

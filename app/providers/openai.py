@@ -1,9 +1,8 @@
 import openai
-from typing import Dict, List
 
 from app.config import get_settings
 from app.logging_config import structured_log
-from app.providers.base import LLMProvider, LLMResponse, LLMUsage, LLMProviderError
+from app.providers.base import LLMProvider, LLMProviderError, LLMResponse, LLMUsage
 
 
 class OpenAIProvider(LLMProvider):
@@ -49,11 +48,9 @@ class OpenAIProvider(LLMProvider):
             structured_log("ERROR", "openai.generate.error", error=str(e))
             raise LLMProviderError(str(e)) from e
 
-    async def embed(self, texts: List[str]) -> List[List[float]]:
+    async def embed(self, texts: list[str]) -> list[list[float]]:
         try:
-            resp = await self.client.embeddings.create(
-                model=self.embedding_model, input=texts
-            )
+            resp = await self.client.embeddings.create(model=self.embedding_model, input=texts)
             return [d.embedding for d in resp.data]
         except Exception as e:
             structured_log("ERROR", "openai.embed.error", error=str(e))

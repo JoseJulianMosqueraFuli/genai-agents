@@ -3,8 +3,6 @@
 Uses injected provider + store so no API key, network or SDK is needed.
 """
 
-from typing import List
-
 import pytest
 
 from app.agents.memory import InMemoryConversationMemory
@@ -19,7 +17,7 @@ class FakeProvider(LLMProvider):
     async def generate(self, system: str, user: str, **kwargs) -> LLMResponse:
         return LLMResponse(text="answer", usage=LLMUsage(1, 1), model="fake")
 
-    async def embed(self, texts: List[str]) -> List[List[float]]:
+    async def embed(self, texts: list[str]) -> list[list[float]]:
         return [[float(len(t)), 0.0] for t in texts]
 
 

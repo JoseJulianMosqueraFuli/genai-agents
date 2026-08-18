@@ -1,5 +1,4 @@
-from dataclasses import dataclass, field
-from typing import Dict, List
+from dataclasses import dataclass
 
 from app.providers.base import LLMUsage
 
@@ -19,10 +18,12 @@ class CostEstimate:
 class CostTracker:
     """Track per-request token usage and estimate cost for observability."""
 
-    def __init__(self, input_price_per_1k: float = 0.00015, output_price_per_1k: float = 0.0006) -> None:
+    def __init__(
+        self, input_price_per_1k: float = 0.00015, output_price_per_1k: float = 0.0006
+    ) -> None:
         self.input_price_per_1k = input_price_per_1k
         self.output_price_per_1k = output_price_per_1k
-        self._history: List[LLMUsage] = []
+        self._history: list[LLMUsage] = []
 
     def add(self, usage: LLMUsage) -> None:
         self._history.append(usage)
