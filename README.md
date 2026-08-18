@@ -8,13 +8,13 @@
 
 English | [Español](README.es.md)
 
-Production-grade GenAI agent platform: **RAG** (retrieval-augmented generation) + **multi-provider LLMs** (OpenAI / AWS Bedrock) + **LangGraph** orchestration + **guardrails** (PII redaction, prompt-injection defense) + **evaluation** (faithfulness, answer relevance) + **cost tracking** — all behind a FastAPI service, containerized and CI-tested.
+Production-grade GenAI agent platform on **AWS Bedrock**: **RAG** (retrieval-augmented generation) + **Amazon Nova** generation + **Titan v2** embeddings + **LangGraph** orchestration + **guardrails** (PII redaction, prompt-injection defense) + **evaluation** (faithfulness, answer relevance) + **cost tracking** — all behind a FastAPI service, containerized and CI-tested.
 
 ## Why this project?
 
 Most GenAI demos stop at "call an LLM". This one is built like a production service:
 
-- **Multi-LLM strategy** via a provider interface — swap OpenAI for Bedrock (Claude) with one env var.
+- **AWS Bedrock via the Converse API** behind a provider interface — model-agnostic (Amazon Nova by default, also Claude/Llama) with no vendor API keys.
 - **RAG pipeline** with vector search over your documents (embeddings + cosine similarity).
 - **LangGraph agent** wiring retrieval → grounding → answer, so every response is traceable.
 - **Guardrails** on input (prompt injection) and output (PII redaction) — required for real clients.
@@ -34,7 +34,7 @@ Most GenAI demos stop at "call an LLM". This one is built like a production serv
    retrieve ──► embed query ──► vector search ──► top-k chunks
      │
      ▼
-   answer ──► LLM (OpenAI | Bedrock) grounded on context
+   answer ──► LLM (AWS Bedrock: Amazon Nova) grounded on context
      │
      ▼
 [Guardrails: output] ── PII redaction
@@ -49,10 +49,13 @@ Most GenAI demos stop at "call an LLM". This one is built like a production serv
 ## Quick Start
 
 ```bash
-cp .env.example .env   # fill OPENAI_API_KEY (or switch to BEDROCK)
+cp .env.example .env   # set AWS region/model; credentials come from the AWS chain
 uv sync                # creates .venv from pyproject.toml + uv.lock
 uv run uvicorn app.main:app --reload
 ```
+
+> Auth uses the standard AWS credential chain (env vars, `~/.aws/`, or an IAM
+> role) and the execution identity needs `bedrock:InvokeModel`. No vendor API key.
 
 > Uses [uv](https://docs.astral.sh/uv/) for dependency management. Install it with
 > `curl -LsSf https://astral.sh/uv/install.sh | sh` (or `pipx install uv`).
@@ -85,15 +88,15 @@ uv run pytest tests/ -v
 
 ## Configuration (`.env`)
 
-| Variable                    | Default                   | Description                              |
-| --------------------------- | ------------------------- | ---------------------------------------- |
-| `LLM_PROVIDER`              | `openai`                  | `openai` or `bedrock`                    |
-| `LLM_MODEL`                 | `gpt-4o-mini`             | Model for OpenAI                         |
-| `BEDROCK_MODEL_ID`          | `us.amazon.nova-pro-v1:0` | Strong-tier model via Bedrock (Converse) |
-| `EMBEDDING_MODEL`           | `text-embedding-3-small`  | Embeddings model                         |
-| `ENABLE_GUARDRAILS`         | `true`                    | Toggle input/output guards               |
-| `COST_PER_1K_INPUT_TOKENS`  | `0.00015`                 | Fallback $/1k input for unknown models   |
-| `COST_PER_1K_OUTPUT_TOKENS` | `0.0006`                  | Fallback $/1k output for unknown models  |
+| Variable                    | Default                        | Description                             |
+| --------------------------- | ------------------------------ | --------------------------------------- |
+| `BEDROCK_REGION`            | `us-east-1`                    | AWS region for Bedrock                  |
+| `BEDROCK_MODEL_ID`          | `us.amazon.nova-pro-v1:0`      | Strong-tier model (Converse API)        |
+| `BEDROCK_CHEAP_MODEL`       | `us.amazon.nova-micro-v1:0`    | Cheap-tier model (tiering)              |
+| `BEDROCK_EMBEDDING_MODEL`   | `amazon.titan-embed-text-v2:0` | Titan v2 embeddings model               |
+| `ENABLE_GUARDRAILS`         | `true`                         | Toggle input/output guards              |
+| `COST_PER_1K_INPUT_TOKENS`  | `0.00015`                      | Fallback $/1k input for unknown models  |
+| `COST_PER_1K_OUTPUT_TOKENS` | `0.0006`                       | Fallback $/1k output for unknown models |
 
 ## API
 
@@ -110,8 +113,8 @@ uv run pytest tests/ -v
 {
   "query": "What is Kubernetes?",
   "answer": "Kubernetes is a container orchestration platform...",
-  "provider": "openai",
-  "model": "gpt-4o-mini",
+  "provider": "bedrock",
+  "model": "us.amazon.nova-pro-v1:0",
   "context_sources": ["c1", "c2"],
   "eval_scores": { "faithfulness": 1.0, "answer_relevance": 0.5 },
   "usage": { "input_tokens": 120, "output_tokens": 80 },
@@ -155,7 +158,7 @@ curl -s -X POST http://localhost:8000/v1/documents \
 {
   "status": "ok",
   "app": "genai-agents",
-  "provider": "openai",
+  "provider": "bedrock",
   "guardrails": true
 }
 ```
@@ -172,7 +175,7 @@ Cache hit-rate for the response cache (cost discipline):
 
 Three mechanisms for cost discipline:
 
-- **Model tiering** (`costs/tiering.py`): a provider-aware `ComplexityRouter` sends short/factual queries to the cheap model (`gpt-4o-mini` / Amazon Nova Micro) and reasoning/multi-step ones to the strong model (`gpt-4o` / Nova Pro). The tier-selected model is injected into the graph and passed to `provider.generate(model=...)`, so routing actually reaches the LLM — not just the cache key.
+- **Model tiering** (`costs/tiering.py`): a `ComplexityRouter` sends short/factual queries to the cheap model (Amazon Nova Micro) and reasoning/multi-step ones to the strong model (Nova Pro). The tier-selected model is injected into the graph and passed to `provider.generate(model=...)`, so routing actually reaches the LLM — not just the cache key.
 - **Per-model cost tracking** (`eval/cost.py`): `CostTracker` prices each request against the model that actually ran (`MODEL_PRICING` table), so a cheap-tier answer isn't billed like the strong tier. Unknown models fall back to `COST_PER_1K_*`. Inference-profile ids (e.g. `us.amazon.nova-pro-v1:0`) resolve to their base model price.
 - **Response caching** (`costs/cache.py`): identical (query, model) pairs return from an in-memory cache with TTL — a cache hit costs **$0.00** and ~0ms. See `GET /v1/cache/stats`.
 
@@ -227,7 +230,7 @@ The project ships with Terraform to deploy the service on **Amazon ECS Fargate w
 
 ```bash
 cd infra/terraform
-cp terraform.tfvars.example terraform.tfvars   # llm_provider = "bedrock" (or "openai")
+cp terraform.tfvars.example terraform.tfvars   # set region + Bedrock model ids
 terraform init && terraform apply
 ```
 
@@ -266,14 +269,14 @@ additions. Full guide: [`docs/rag-s3-vectors.md`](docs/rag-s3-vectors.md).
 ```env
 LLM_PROVIDER=bedrock
 BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0
-EMBEDDING_PROVIDER=bedrock
+BEDROCK_EMBEDDING_MODEL=amazon.titan-embed-text-v2:0
 VECTOR_BACKEND=s3_vectors
 S3_VECTORS_BUCKET=genai-agents-vectors
 ```
 
 ## Tech Stack
 
-FastAPI · LangGraph · Amazon Nova · Amazon Titan Embeddings · **Amazon S3 Vectors** · AWS Bedrock · **AgentCore (Runtime + Memory)** · OpenAI · Docker · ECS Fargate · Terraform · GitHub Actions · pytest
+FastAPI · LangGraph · Amazon Nova · Amazon Titan Embeddings · **Amazon S3 Vectors** · AWS Bedrock · **AgentCore (Runtime + Memory)** · Docker · ECS Fargate · Terraform · GitHub Actions · pytest
 
 ## Contributing
 

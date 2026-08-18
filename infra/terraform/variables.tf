@@ -59,40 +59,15 @@ variable "task_memory" {
 }
 
 variable "llm_provider" {
-  description = "LLM provider: openai or bedrock"
+  description = "LLM provider (Bedrock only)"
   type        = string
   default     = "bedrock"
-}
-
-variable "llm_model" {
-  description = "LLM model id"
-  type        = string
-  default     = "gpt-4o-mini"
 }
 
 variable "bedrock_model_id" {
-  description = "Bedrock model id (if llm_provider=bedrock)"
+  description = "Bedrock generation model id (Amazon Nova via inference profile)"
   type        = string
-  default     = "anthropic.claude-3-5-sonnet-20240620-v1"
-}
-
-variable "openai_api_key" {
-  description = "OpenAI API key (leave empty if using Bedrock). Use terraform.tfvars / secrets."
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "embedding_model" {
-  description = "Embeddings model"
-  type        = string
-  default     = "text-embedding-3-small"
-}
-
-variable "embedding_provider" {
-  description = "Embeddings provider: openai or bedrock"
-  type        = string
-  default     = "bedrock"
+  default     = "us.amazon.nova-pro-v1:0"
 }
 
 variable "bedrock_embedding_model" {

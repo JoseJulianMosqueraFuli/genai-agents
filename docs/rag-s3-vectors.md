@@ -47,7 +47,6 @@ LLM_PROVIDER=bedrock
 BEDROCK_REGION=us-east-1
 BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0
 BEDROCK_CHEAP_MODEL=us.amazon.nova-micro-v1:0
-EMBEDDING_PROVIDER=bedrock
 BEDROCK_EMBEDDING_MODEL=amazon.titan-embed-text-v2:0
 EMBEDDING_DIMENSION=1024
 

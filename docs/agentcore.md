@@ -50,8 +50,8 @@ agentcore launch
 agentcore invoke '{"prompt": "What is Kubernetes?"}'
 ```
 
-Set provider credentials as runtime env/secrets (`LLM_PROVIDER=bedrock` avoids an
-OpenAI key; the execution role needs `bedrock:InvokeModel`).
+No vendor API keys are needed: authentication uses the AWS credential chain and the
+execution role must allow `bedrock:InvokeModel`.
 
 ## Enable AgentCore Memory
 

@@ -73,10 +73,6 @@
           <mxGeometry x="560" y="650" width="78" height="78" as="geometry" />
         </mxCell>
 
-        <mxCell id="sm" value="Secrets Manager&#10;(OpenAI key, if used)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#DD344C;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.secrets_manager;" vertex="1" parent="1">
-          <mxGeometry x="740" y="650" width="78" height="78" as="geometry" />
-        </mxCell>
-
         <mxCell id="ecr" value="Amazon ECR&#10;container image" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.elastic_container_registry;" vertex="1" parent="1">
           <mxGeometry x="920" y="650" width="78" height="78" as="geometry" />
         </mxCell>
@@ -124,7 +120,6 @@
         </mxCell>
         <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#E7157B;" edge="1" parent="1" source="ecs" target="cw"><mxGeometry relative="1" as="geometry" /></mxCell>
         <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#E7157B;" edge="1" parent="1" source="acrt" target="cw"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#DD344C;" edge="1" parent="1" source="ecs" target="sm"><mxGeometry relative="1" as="geometry" /></mxCell>
 
       </root>
     </mxGraphModel>

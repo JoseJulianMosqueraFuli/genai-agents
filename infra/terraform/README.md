@@ -13,7 +13,7 @@ This Terraform configuration deploys the `genai-agents` FastAPI service on **Ama
            │  task: genai-agents (port 8000)
            ├─ ECR image
            ├─ CloudWatch Logs
-           ├─ IAM execution role (ECR pull, logs, Secrets Manager)
+           ├─ IAM execution role (ECR pull, logs)
            └─ IAM task role (Amazon Bedrock invoke)
                 in private subnets via NAT
 ```
@@ -26,23 +26,12 @@ This Terraform configuration deploys the `genai-agents` FastAPI service on **Ama
 - Terraform >= 1.5
 - Docker (to build & push the image)
 
-### 2. Choose your LLM provider
-
-Two options:
-
-**Option A — AWS Bedrock (recommended, no secrets):**
+### 2. Configure
 
 ```bash
 cp terraform.tfvars.example terraform.tfvars
-# keep llm_provider = "bedrock"; the task role already has bedrock:InvokeModel
-```
-
-**Option B — OpenAI:**
-
-```bash
-cp terraform.tfvars.example terraform.tfvars
-# set llm_provider = "openai" and openai_api_key = "sk-..."
-# (key goes to AWS Secrets Manager, never to the image)
+# AWS Bedrock is the only provider — no API keys or secrets. The task role
+# already grants bedrock:InvokeModel; just set the region and model ids.
 ```
 
 ### 3. Apply

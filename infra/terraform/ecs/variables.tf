@@ -68,24 +68,9 @@ variable "llm_provider" {
   default = "bedrock"
 }
 
-variable "llm_model" {
-  type    = string
-  default = "gpt-4o-mini"
-}
-
 variable "bedrock_model_id" {
   type    = string
-  default = "anthropic.claude-3-5-sonnet-20240620-v1"
-}
-
-variable "embedding_model" {
-  type    = string
-  default = "text-embedding-3-small"
-}
-
-variable "embedding_provider" {
-  type    = string
-  default = "bedrock"
+  default = "us.amazon.nova-pro-v1:0"
 }
 
 variable "bedrock_embedding_model" {
@@ -111,11 +96,6 @@ variable "s3_vectors_index" {
 variable "enable_guardrails" {
   type    = bool
   default = true
-}
-
-variable "openai_api_key_secret_arn" {
-  type    = string
-  default = ""
 }
 
 output "service_name" {

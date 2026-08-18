@@ -6,46 +6,30 @@ module "vpc" {
   azs         = var.azs
 }
 
-resource "aws_secretsmanager_secret" "openai" {
-  count       = var.llm_provider == "openai" ? 1 : 0
-  name        = "${var.project}-${var.environment}-openai-key"
-  description = "OpenAI API key for ${var.project}"
-}
-
-resource "aws_secretsmanager_secret_version" "openai" {
-  count         = var.llm_provider == "openai" ? 1 : 0
-  secret_id     = aws_secretsmanager_secret.openai[0].id
-  secret_string = var.openai_api_key
-}
-
 module "ecs" {
   source = "./ecs"
 
-  project                   = var.project
-  environment               = var.environment
-  region                    = var.region
-  ecr_repository_url        = aws_ecr_repository.app.repository_url
-  private_subnet_ids        = module.vpc.private_subnet_ids
-  vpc_id                    = module.vpc.vpc_id
-  target_group_arn          = aws_alb_target_group.app.arn
-  listener_rule_arn         = aws_alb_listener.http.arn
-  alb_security_group_id     = aws_security_group.alb.id
-  desired_count             = var.desired_count
-  fargate_spot_weight       = var.fargate_spot_weight
-  fargate_base_count        = var.fargate_base_count
-  task_cpu                  = var.task_cpu
-  task_memory               = var.task_memory
-  llm_provider              = var.llm_provider
-  llm_model                 = var.llm_model
-  bedrock_model_id          = var.bedrock_model_id
-  embedding_model           = var.embedding_model
-  embedding_provider        = var.embedding_provider
-  bedrock_embedding_model   = var.bedrock_embedding_model
-  vector_backend            = var.vector_backend
-  s3_vectors_bucket         = var.s3_vectors_bucket
-  s3_vectors_index          = var.s3_vectors_index
-  enable_guardrails         = var.enable_guardrails
-  openai_api_key_secret_arn = var.llm_provider == "openai" ? aws_secretsmanager_secret.openai[0].arn : ""
+  project                 = var.project
+  environment             = var.environment
+  region                  = var.region
+  ecr_repository_url      = aws_ecr_repository.app.repository_url
+  private_subnet_ids      = module.vpc.private_subnet_ids
+  vpc_id                  = module.vpc.vpc_id
+  target_group_arn        = aws_alb_target_group.app.arn
+  listener_rule_arn       = aws_alb_listener.http.arn
+  alb_security_group_id   = aws_security_group.alb.id
+  desired_count           = var.desired_count
+  fargate_spot_weight     = var.fargate_spot_weight
+  fargate_base_count      = var.fargate_base_count
+  task_cpu                = var.task_cpu
+  task_memory             = var.task_memory
+  llm_provider            = var.llm_provider
+  bedrock_model_id        = var.bedrock_model_id
+  bedrock_embedding_model = var.bedrock_embedding_model
+  vector_backend          = var.vector_backend
+  s3_vectors_bucket       = var.s3_vectors_bucket
+  s3_vectors_index        = var.s3_vectors_index
+  enable_guardrails       = var.enable_guardrails
 }
 
 output "alb_dns" {

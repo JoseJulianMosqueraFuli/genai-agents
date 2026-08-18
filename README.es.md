@@ -5,13 +5,13 @@
 
 [English](README.md) | Español
 
-Plataforma de agentes GenAI de nivel producción: **RAG** (generación aumentada por recuperación) + **LLMs multi-proveedor** (OpenAI / AWS Bedrock) + orquestación con **LangGraph** + **guardrails** (redacción de PII, defensa contra prompt injection) + **evaluación** (faithfulness, relevancia de respuesta) + **tracking de costos** — detrás de un servicio FastAPI, containerizado y con CI.
+Plataforma de agentes GenAI de nivel producción sobre **AWS Bedrock**: **RAG** (generación aumentada por recuperación) + generación con **Amazon Nova** + embeddings **Titan v2** + orquestación con **LangGraph** + **guardrails** (redacción de PII, defensa contra prompt injection) + **evaluación** (faithfulness, relevancia de respuesta) + **tracking de costos** — detrás de un servicio FastAPI, containerizado y con CI.
 
 ## ¿Por qué este proyecto?
 
 La mayoría de demos GenAI se quedan en "llamar a un LLM". Este está construido como un servicio de producción:
 
-- **Estrategia multi-LLM** vía interfaz de proveedores — cambia OpenAI por Bedrock (Claude) con una variable de entorno.
+- **AWS Bedrock vía Converse API** detrás de una interfaz de proveedor — agnóstico de modelo (Amazon Nova por defecto, también Claude/Llama) y sin claves de API de terceros.
 - **Pipeline RAG** con búsqueda vectorial sobre tus documentos (embeddings + similitud coseno).
 - **Agente LangGraph** conectando recuperación → grounding → respuesta, para que cada respuesta sea trazable.
 - **Guardrails** de entrada (prompt injection) y salida (redacción de PII) — requerido para clientes reales.
@@ -31,7 +31,7 @@ La mayoría de demos GenAI se quedan en "llamar a un LLM". Este está construido
    retrieve ──► embed query ──► búsqueda vectorial ──► top-k chunks
      │
      ▼
-   answer ──► LLM (OpenAI | Bedrock) fundamentado en contexto
+   answer ──► LLM (AWS Bedrock: Amazon Nova) fundamentado en contexto
      │
      ▼
 [Guardrails: salida] ── redacción de PII
@@ -46,7 +46,7 @@ La mayoría de demos GenAI se quedan en "llamar a un LLM". Este está construido
 ## Inicio rápido
 
 ```bash
-cp .env.example .env   # llena OPENAI_API_KEY (o cambia a BEDROCK)
+cp .env.example .env   # configura región/modelo; las credenciales vienen de la cadena AWS
 uv sync                # crea .venv desde pyproject.toml + uv.lock
 uv run uvicorn app.main:app --reload
 ```
@@ -86,8 +86,8 @@ uv run pytest tests/ -v
 {
   "query": "What is Kubernetes?",
   "answer": "Kubernetes is a container orchestration platform...",
-  "provider": "openai",
-  "model": "gpt-4o-mini",
+  "provider": "bedrock",
+  "model": "us.amazon.nova-pro-v1:0",
   "context_sources": ["c1", "c2"],
   "eval_scores": { "faithfulness": 1.0, "answer_relevance": 0.5 },
   "usage": { "input_tokens": 120, "output_tokens": 80 },
@@ -103,7 +103,7 @@ uv run pytest tests/ -v
 {
   "status": "ok",
   "app": "genai-agents",
-  "provider": "openai",
+  "provider": "bedrock",
   "guardrails": true
 }
 ```
@@ -122,7 +122,7 @@ El proyecto incluye Terraform para desplegar el servicio en **Amazon ECS Fargate
 
 ```bash
 cd infra/terraform
-cp terraform.tfvars.example terraform.tfvars   # llm_provider = "bedrock" (o "openai")
+cp terraform.tfvars.example terraform.tfvars   # configura región + ids de modelo Bedrock
 terraform init && terraform apply
 ```
 
@@ -130,4 +130,4 @@ Mira [`infra/terraform/README.md`](infra/terraform/README.md) para el paso a pas
 
 ## Stack
 
-FastAPI · LangGraph · OpenAI · AWS Bedrock · Docker · ECS Fargate · Terraform · GitHub Actions · pytest
+FastAPI · LangGraph · Amazon Nova · Amazon Titan Embeddings · AWS Bedrock · Docker · ECS Fargate · Terraform · GitHub Actions · pytest

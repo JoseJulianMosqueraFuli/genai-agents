@@ -16,7 +16,7 @@ FastAPI + LangGraph platform that answers questions grounded on your documents (
 ## Environment
 
 - Config lives in `app/config.py` (pydantic-settings), loaded from `.env`.
-- Provider selection: `LLM_PROVIDER=openai|bedrock`. Runtime needs `OPENAI_API_KEY` or AWS credentials; tests don't. `OpenAIProvider.__init__` raises without a key, so never instantiate the pipeline at import time in code meant to be importable in CI — build it lazily (see `app/runtime/agentcore_app.py`).
+- Single provider: AWS Bedrock (`LLM_PROVIDER=bedrock`, the only allowed value). Runtime uses the AWS credential chain (env/`~/.aws/`/IAM role) with `bedrock:InvokeModel`; tests don't need credentials (they inject fakes). `BedrockProvider` builds a boto3 client at init, so keep pipeline construction lazy in code meant to be importable in CI — build it lazily (see `app/runtime/agentcore_app.py`).
 - Memory backend: `MEMORY_BACKEND=in_memory|agentcore`. `agentcore` also needs `AGENTCORE_MEMORY_ID` (+ optional `AGENTCORE_ACTOR_ID`) and the `bedrock-agentcore` SDK.
 - Guardrails toggle: `ENABLE_GUARDRAILS`.
 - `bedrock-agentcore` is an optional extra (`uv sync --extra agentcore`), imported lazily in `memory.py` and `runtime/agentcore_app.py` so CI/tests run without it.
@@ -24,7 +24,7 @@ FastAPI + LangGraph platform that answers questions grounded on your documents (
 
 ## Architecture notes
 
-- `app/providers/` — `LLMProvider` ABC (`generate`, `embed`). `OpenAIProvider` (chat + embeddings). `BedrockProvider` uses the **Converse API** for generation (model-agnostic: Amazon Nova by default, also Claude/Llama) and **Titan Text Embeddings V2** for `embed`. Factory in `providers/factory.py`. Full-AWS stack: Nova (gen) + Titan v2 (embed) + S3 Vectors (RAG).
+- `app/providers/` — `LLMProvider` ABC (`generate`, `embed`). `BedrockProvider` is the only implementation: **Converse API** for generation (model-agnostic: Amazon Nova by default, also Claude/Llama) and **Titan Text Embeddings V2** for `embed`. Factory in `providers/factory.py`. Full-AWS stack: Nova (gen) + Titan v2 (embed) + S3 Vectors (RAG).
 - `app/rag/` — `retriever.py` in-memory `VectorStore` (embed, cosine, top-k) and `s3_vectors.py` `S3VectorStore` (Amazon S3 Vectors via `boto3.client("s3vectors")`, managed by SDK). `factory.py` picks the backend from `VECTOR_BACKEND`. Both share the same contract (`add_documents`, `search -> List[RetrievedDoc]`, `size`).
 - `app/agents/` — LangGraph `StateGraph`: `retrieve` → `answer`. Nodes in `nodes.py`, state schema in `state.py`.
 - `app/guards/` — input guard (prompt injection + PII scan) and output guard (PII redaction). `guards/__init__.py` exposes `inspect_input` / `inspect_output`.

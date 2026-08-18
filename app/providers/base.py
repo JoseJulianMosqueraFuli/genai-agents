@@ -32,7 +32,7 @@ class LLMProviderError(Exception):
 
 
 class LLMProvider(ABC):
-    """Strategy for talking to a hosted LLM (OpenAI, Bedrock, ...)."""
+    """Strategy for talking to a hosted LLM (AWS Bedrock via the Converse API)."""
 
     name: str = "base"
 
