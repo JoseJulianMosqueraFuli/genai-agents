@@ -173,7 +173,8 @@ In production you wire the `EvalRunner` to the real agent and block the pipeline
 
 - [x] Multi-turn conversation memory (in-memory + Amazon Bedrock AgentCore Memory)
 - [x] Serve on Amazon Bedrock AgentCore Runtime (managed, session-isolated)
-- [ ] Persistent vector store (pgvector / FAISS) instead of in-memory
+- [x] Managed vector store — Amazon S3 Vectors (via SDK) with Titan v2 embeddings
+- [x] Full-AWS model stack — Amazon Nova (generation) + Titan Text Embeddings V2
 - [ ] Evaluation with RAGAS-style metrics and a regression dataset
 - [ ] Model A/B routing and canary deployments
 - [ ] Guardrail-as-code policies (budget caps, topic allowlists)
@@ -210,6 +211,24 @@ Conversation memory can be backed by **AgentCore Memory** with a one-line config
 change (`MEMORY_BACKEND=agentcore`), mirroring the LLM provider strategy. Full guide:
 [`docs/agentcore.md`](docs/agentcore.md).
 
+## Full-AWS RAG: Amazon S3 Vectors + Nova + Titan
+
+Set `VECTOR_BACKEND=s3_vectors` to store embeddings in **Amazon S3 Vectors** — a
+purpose-built, serverless vector store managed entirely via SDK (no console, no
+OpenSearch/Aurora cluster). Paired with **Amazon Nova** for generation (via the
+Converse API, with Nova Micro ↔ Nova Pro tiering) and **Amazon Titan Text Embeddings
+V2** for embeddings, it makes the whole stack native AWS. The `S3VectorStore` keeps
+the same `VectorStore` contract, so the agent code is unchanged. Full guide:
+[`docs/rag-s3-vectors.md`](docs/rag-s3-vectors.md).
+
+```env
+LLM_PROVIDER=bedrock
+BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0
+EMBEDDING_PROVIDER=bedrock
+VECTOR_BACKEND=s3_vectors
+S3_VECTORS_BUCKET=genai-agents-vectors
+```
+
 ## Tech Stack
 
-FastAPI · LangGraph · OpenAI · AWS Bedrock · **AgentCore (Runtime + Memory)** · Docker · ECS Fargate · Terraform · GitHub Actions · pytest
+FastAPI · LangGraph · Amazon Nova · Amazon Titan Embeddings · **Amazon S3 Vectors** · AWS Bedrock · **AgentCore (Runtime + Memory)** · OpenAI · Docker · ECS Fargate · Terraform · GitHub Actions · pytest
