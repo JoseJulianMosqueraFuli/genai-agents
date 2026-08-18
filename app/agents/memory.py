@@ -123,6 +123,7 @@ def get_memory() -> ConversationMemory:
         _memory_singleton = AgentCoreMemory(
             memory_id=settings.agentcore_memory_id,
             region=settings.bedrock_region,
+            actor_id=settings.agentcore_actor_id,
         )
     else:
         structured_log("INFO", "memory.backend", backend="in_memory")

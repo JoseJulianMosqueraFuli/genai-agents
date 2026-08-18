@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     # Conversation memory: "in_memory" (default) or "agentcore" (Bedrock AgentCore Memory).
     memory_backend: Literal["in_memory", "agentcore"] = "in_memory"
     agentcore_memory_id: str = ""
+    # Logical end-user id used to scope AgentCore Memory events.
+    agentcore_actor_id: str = "user"
     # Max prior turns injected into the prompt for multi-turn coherence.
     memory_window: int = 6
 

@@ -1,0 +1,11 @@
+# Optional dependencies for Amazon Bedrock AgentCore deployment.
+# Not needed for local dev, tests or the ECS Fargate path — install only when you
+# serve on AgentCore Runtime or use AgentCore Memory:
+#   pip install -r requirements.txt -r requirements-agentcore.txt
+-r requirements.txt
+
+# AgentCore Runtime SDK (BedrockAgentCoreApp + @app.entrypoint) and Memory client.
+bedrock-agentcore>=0.1.0
+
+# CLI to configure/launch agents on AgentCore Runtime (agentcore configure|launch).
+bedrock-agentcore-starter-toolkit>=0.1.0
