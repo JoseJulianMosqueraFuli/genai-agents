@@ -55,6 +55,12 @@ uvicorn app.main:app --reload
 ```
 
 ```bash
+# 1. Ingest documents into the RAG store
+curl -s -X POST http://localhost:8000/v1/documents \
+  -H 'Content-Type: application/json' \
+  -d '{"documents":[{"text":"Kubernetes is a container orchestration platform."}]}'
+
+# 2. Ask a grounded question
 curl -s http://localhost:8000/v1/agents/chat \
   -H 'Content-Type: application/json' \
   -d '{"query": "What is Kubernetes?"}'
@@ -110,6 +116,34 @@ pytest tests/ -v
   "guardrail_blocked": false,
   "latency_ms": 340
 }
+```
+
+### `POST /v1/documents`
+
+Ingest documents into the RAG vector store — this is how data gets into retrieval.
+Embeds each document with the configured provider and stores it; for the S3 Vectors
+backend it also creates the bucket/index on first call.
+
+```json
+{
+  "documents": [
+    {
+      "text": "Kubernetes orchestrates containers.",
+      "metadata": { "src": "k8s-docs" }
+    },
+    { "text": "AWS Fargate runs containers without managing servers." }
+  ]
+}
+```
+
+```json
+{ "ingested": 2, "total": 2 }
+```
+
+```bash
+curl -s -X POST http://localhost:8000/v1/documents \
+  -H 'Content-Type: application/json' \
+  -d '{"documents":[{"text":"Kubernetes orchestrates containers."}]}'
 ```
 
 ### `GET /health`

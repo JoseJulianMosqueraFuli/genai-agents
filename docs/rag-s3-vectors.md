@@ -60,7 +60,17 @@ The index dimension must match the embedding dimension (Titan v2 default 1024).
 
 ## Bootstrapping the index
 
-Because we manage S3 Vectors via SDK, create the bucket + index once from the app:
+Because we manage S3 Vectors via SDK, the index is created on first ingest. The
+simplest path is the ingestion endpoint (`AgentPipeline.ingest` calls `ensure_index()`
+once, then `add_documents`):
+
+```bash
+curl -s -X POST http://localhost:8000/v1/documents \
+  -H 'Content-Type: application/json' \
+  -d '{"documents":[{"text":"<your document chunk>","metadata":{"src":"docs"}}]}'
+```
+
+Or directly in code:
 
 ```python
 from app.providers.factory import get_provider

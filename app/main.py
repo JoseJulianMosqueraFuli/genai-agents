@@ -35,10 +35,33 @@ class AgentResponse(BaseModel):
 pipeline = AgentPipeline()
 
 
+class Document(BaseModel):
+    text: str = Field(..., min_length=1, max_length=20000)
+    metadata: dict = {}
+
+
+class IngestRequest(BaseModel):
+    documents: List[Document] = Field(..., min_length=1, max_length=500)
+
+
+class IngestResponse(BaseModel):
+    ingested: int
+    total: int
+
+
 @app.post("/v1/agents/chat", response_model=AgentResponse)
 async def agent_chat(req: AgentRequest) -> AgentResponse:
     result = await pipeline.run(req.query, use_rag=req.use_rag, session_id=req.session_id)
     return AgentResponse(**result.to_dict())
+
+
+@app.post("/v1/documents", response_model=IngestResponse, status_code=201)
+async def ingest_documents(req: IngestRequest) -> IngestResponse:
+    result = await pipeline.ingest(
+        [d.text for d in req.documents],
+        metadata=[d.metadata for d in req.documents],
+    )
+    return IngestResponse(**result)
 
 
 @app.get("/health")

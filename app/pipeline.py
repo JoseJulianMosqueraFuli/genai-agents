@@ -75,6 +75,7 @@ class AgentPipeline:
         self.tier_router = tier_router or ComplexityRouter()
         self.cache = cache or ResponseCache(ttl_seconds=3600)
         self.memory = memory if memory is not None else get_memory()
+        self._index_ready = False
 
     async def run(self, query: str, use_rag: bool = True, session_id: str = "default") -> AgentResult:
         started = time.monotonic()
@@ -183,6 +184,28 @@ class AgentPipeline:
             cache_hit=False,
             tier=tier.tier,
         )
+
+    def _ensure_store_ready(self) -> None:
+        """Create the vector index if the backend needs it (S3 Vectors). Once per process."""
+        if self._index_ready:
+            return
+        ensure = getattr(self.store, "ensure_index", None)
+        if callable(ensure):
+            ensure()
+        self._index_ready = True
+
+    async def ingest(self, documents: List[str], metadata: Optional[List[dict]] = None) -> dict:
+        """Embed and store documents into the vector backend.
+
+        This is the "how data gets into RAG" path: for S3 Vectors it also creates the
+        bucket/index on first call. Returns counts for the caller.
+        """
+        if not documents:
+            return {"ingested": 0, "total": self.store.size}
+        self._ensure_store_ready()
+        await self.store.add_documents(documents, metadata=metadata)
+        structured_log("INFO", "rag.ingest", count=len(documents), total=self.store.size)
+        return {"ingested": len(documents), "total": self.store.size}
 
     def _render_history(self, session_id: str) -> str:
         turns: List[Turn] = self.memory.history(session_id)
