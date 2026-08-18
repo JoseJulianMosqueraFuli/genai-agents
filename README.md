@@ -271,3 +271,13 @@ S3_VECTORS_BUCKET=genai-agents-vectors
 ## Tech Stack
 
 FastAPI · LangGraph · Amazon Nova · Amazon Titan Embeddings · **Amazon S3 Vectors** · AWS Bedrock · **AgentCore (Runtime + Memory)** · OpenAI · Docker · ECS Fargate · Terraform · GitHub Actions · pytest
+
+## Contributing
+
+Contributions are welcome. See [`CONTRIBUTING.md`](.github/CONTRIBUTING.md) for the dev
+setup (uv + ruff + pytest, TDD) and workflow, and [`CODE_OF_CONDUCT.md`](.github/CODE_OF_CONDUCT.md).
+Security issues: please follow [`SECURITY.md`](.github/SECURITY.md) (do not open a public issue).
+
+## License
+
+Released under the [MIT License](LICENSE).

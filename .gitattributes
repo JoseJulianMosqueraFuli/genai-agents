@@ -1,0 +1,9 @@
+# Normalize line endings to LF across platforms.
+* text=auto eol=lf
+
+# Binary / generated files: don't diff or eol-normalize.
+*.drawio -text
+uv.lock linguist-generated=true -diff
+
+# Keep shell scripts LF.
+*.sh text eol=lf
