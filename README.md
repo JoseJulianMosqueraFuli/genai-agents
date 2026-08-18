@@ -76,15 +76,15 @@ pytest tests/ -v
 
 ## Configuration (`.env`)
 
-| Variable | Default | Description |
-|---|---|---|
-| `LLM_PROVIDER` | `openai` | `openai` or `bedrock` |
-| `LLM_MODEL` | `gpt-4o-mini` | Model for OpenAI |
-| `BEDROCK_MODEL_ID` | `anthropic.claude-3-5-sonnet-20240620-v1` | Claude via Bedrock |
-| `EMBEDDING_MODEL` | `text-embedding-3-small` | Embeddings model |
-| `ENABLE_GUARDRAILS` | `true` | Toggle input/output guards |
-| `COST_PER_1K_INPUT_TOKENS` | `0.00015` | $/1k input tokens (cost model) |
-| `COST_PER_1K_OUTPUT_TOKENS` | `0.0006` | $/1k output tokens (cost model) |
+| Variable                    | Default                                   | Description                     |
+| --------------------------- | ----------------------------------------- | ------------------------------- |
+| `LLM_PROVIDER`              | `openai`                                  | `openai` or `bedrock`           |
+| `LLM_MODEL`                 | `gpt-4o-mini`                             | Model for OpenAI                |
+| `BEDROCK_MODEL_ID`          | `anthropic.claude-3-5-sonnet-20240620-v1` | Claude via Bedrock              |
+| `EMBEDDING_MODEL`           | `text-embedding-3-small`                  | Embeddings model                |
+| `ENABLE_GUARDRAILS`         | `true`                                    | Toggle input/output guards      |
+| `COST_PER_1K_INPUT_TOKENS`  | `0.00015`                                 | $/1k input tokens (cost model)  |
+| `COST_PER_1K_OUTPUT_TOKENS` | `0.0006`                                  | $/1k output tokens (cost model) |
 
 ## API
 
@@ -115,7 +115,12 @@ pytest tests/ -v
 ### `GET /health`
 
 ```json
-{ "status": "ok", "app": "genai-agents", "provider": "openai", "guardrails": true }
+{
+  "status": "ok",
+  "app": "genai-agents",
+  "provider": "openai",
+  "guardrails": true
+}
 ```
 
 ### `GET /v1/cache/stats`
@@ -135,7 +140,7 @@ Two mechanisms Provectus-style cost discipline, both live in `app/costs/`:
 
 ## Measured release gates
 
-The `eval/` harness is what gates a release — the *"what you measured, how you produced ground truth, what gated a release"* question:
+The `eval/` harness is what gates a release — the _"what you measured, how you produced ground truth, what gated a release"_ question:
 
 ```
 eval/
@@ -166,10 +171,13 @@ In production you wire the `EvalRunner` to the real agent and block the pipeline
 
 ## Roadmap
 
+- [x] Multi-turn conversation memory (in-memory + Amazon Bedrock AgentCore Memory)
+- [x] Serve on Amazon Bedrock AgentCore Runtime (managed, session-isolated)
 - [ ] Persistent vector store (pgvector / FAISS) instead of in-memory
 - [ ] Evaluation with RAGAS-style metrics and a regression dataset
 - [ ] Model A/B routing and canary deployments
 - [ ] Guardrail-as-code policies (budget caps, topic allowlists)
+- [ ] AgentCore Gateway (expose tools as MCP) + AgentCore Identity
 - [ ] Prometheus metrics for latency, cost and eval drift
 
 ## Deploy on AWS (ECS Fargate Spot)
@@ -184,6 +192,24 @@ terraform init && terraform apply
 
 See [`infra/terraform/README.md`](infra/terraform/README.md) for the full walkthrough (image push, verification, teardown).
 
+## Deploy on Amazon Bedrock AgentCore Runtime
+
+For a fully managed alternative to Fargate — per-session microVM isolation, built-in
+identity and OpenTelemetry observability — the same agent serves on **AgentCore
+Runtime** via `app/runtime/agentcore_app.py`. Both paths run the identical
+`AgentPipeline`, so behaviour never diverges.
+
+```bash
+pip install -r requirements.txt -r requirements-agentcore.txt
+agentcore configure --entrypoint app/runtime/agentcore_app.py
+agentcore launch
+agentcore invoke '{"prompt": "What is Kubernetes?"}'
+```
+
+Conversation memory can be backed by **AgentCore Memory** with a one-line config
+change (`MEMORY_BACKEND=agentcore`), mirroring the LLM provider strategy. Full guide:
+[`docs/agentcore.md`](docs/agentcore.md).
+
 ## Tech Stack
 
-FastAPI · LangGraph · OpenAI · AWS Bedrock · Docker · ECS Fargate · Terraform · GitHub Actions · pytest
+FastAPI · LangGraph · OpenAI · AWS Bedrock · **AgentCore (Runtime + Memory)** · Docker · ECS Fargate · Terraform · GitHub Actions · pytest
