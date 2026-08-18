@@ -9,7 +9,7 @@ class TestComplexityRouter:
         r = ComplexityRouter()
         d = r.decide("What is Kubernetes?")
         assert d.tier == "cheap"
-        assert "gpt-4o-mini" in d.model
+        assert "nova-micro" in d.model
 
     def test_reasoning_goes_strong(self):
         r = ComplexityRouter()
@@ -26,9 +26,9 @@ class TestComplexityRouter:
 class TestResponseCache:
     def test_get_miss_then_hit(self):
         c = ResponseCache(ttl_seconds=3600)
-        assert c.get("what is k8s?", "gpt-4o-mini") is None
-        c.set("what is k8s?", "gpt-4o-mini", "answer")
-        assert c.get("what is k8s?", "gpt-4o-mini") == "answer"
+        assert c.get("what is k8s?", "nova-micro") is None
+        c.set("what is k8s?", "nova-micro", "answer")
+        assert c.get("what is k8s?", "nova-micro") == "answer"
 
     def test_expired_returns_none(self):
         c = ResponseCache(ttl_seconds=1)

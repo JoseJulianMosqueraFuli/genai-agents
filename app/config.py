@@ -10,24 +10,20 @@ class Settings(BaseSettings):
     app_name: str = "genai-agents"
     environment: Literal["dev", "staging", "prod"] = "dev"
 
-    llm_provider: Literal["openai", "bedrock"] = "openai"
-    llm_model: str = "gpt-4o-mini"
-
-    openai_api_key: str = ""
+    # Single provider: Amazon Bedrock (Converse API for generation, Titan v2 for
+    # embeddings). Kept as a field so the value surfaces in responses/health/logs.
+    llm_provider: Literal["bedrock"] = "bedrock"
     bedrock_region: str = "us-east-1"
-    # Full-AWS default: Amazon Nova (generative). Bedrock usually requires the
-    # region-prefixed inference profile id (e.g. "us.amazon.nova-pro-v1:0").
+    # Generation: Amazon Nova. Bedrock usually requires the region-prefixed
+    # inference profile id (e.g. "us.amazon.nova-pro-v1:0").
     bedrock_model_id: str = "us.amazon.nova-pro-v1:0"
 
-    embedding_model: str = "text-embedding-3-small"
-    embedding_provider: Literal["openai", "bedrock"] = "openai"
-    # Amazon Titan Text Embeddings V2 for the Bedrock path (Nova has no embeddings).
+    # Embeddings: Amazon Titan Text Embeddings V2 (Nova has no embeddings model).
     bedrock_embedding_model: str = "amazon.titan-embed-text-v2:0"
     embedding_dimension: int = 1024
 
-    # Model tiering: cheap tier for short/factual queries, strong tier for reasoning.
-    # Bedrock uses Nova Micro (cheap) and bedrock_model_id / Nova Pro (strong).
-    openai_cheap_model: str = "gpt-4o-mini"
+    # Model tiering: cheap tier (Nova Micro) for short/factual queries, strong tier
+    # (bedrock_model_id / Nova Pro) for reasoning.
     bedrock_cheap_model: str = "us.amazon.nova-micro-v1:0"
 
     enable_guardrails: bool = True

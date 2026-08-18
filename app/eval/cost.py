@@ -25,9 +25,6 @@ class ModelPricing:
 # matched exactly first, then as a substring so region-prefixed Bedrock inference
 # profile ids (e.g. "us.amazon.nova-pro-v1:0") resolve to the base model price.
 MODEL_PRICING: dict[str, ModelPricing] = {
-    # OpenAI
-    "gpt-4o-mini": ModelPricing(0.00015, 0.0006),
-    "gpt-4o": ModelPricing(0.005, 0.015),
     # Amazon Nova (generation)
     "amazon.nova-micro-v1:0": ModelPricing(0.000035, 0.00014),
     "amazon.nova-lite-v1:0": ModelPricing(0.00006, 0.00024),

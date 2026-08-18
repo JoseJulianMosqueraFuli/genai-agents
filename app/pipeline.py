@@ -88,7 +88,7 @@ class AgentPipeline:
                 query=query,
                 answer="Request blocked by input guardrails.",
                 provider=self.settings.llm_provider,
-                model=self.settings.llm_model,
+                model=self.settings.bedrock_model_id,
                 session_id=session_id,
                 guardrail_blocked=True,
                 latency_ms=self._elapsed_ms(started),
@@ -186,7 +186,7 @@ class AgentPipeline:
         )
 
         provider_name = result.get("provider", self.settings.llm_provider)
-        model_name = result.get("model", self.settings.llm_model)
+        model_name = result.get("model", self.settings.bedrock_model_id)
 
         self.cache.set(
             query,

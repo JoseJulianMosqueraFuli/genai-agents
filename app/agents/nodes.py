@@ -1,5 +1,4 @@
 from app.agents.state import AgentState
-from app.config import get_settings
 from app.logging_config import structured_log
 from app.providers.base import LLMProvider
 
@@ -38,9 +37,7 @@ class RetrieverNode:
         return state
 
     async def _rewrite_query(self, query: str) -> str:
-        settings = get_settings()
-        if settings.llm_provider == "openai":
-            return query
+        # Rewrite the question into a compact, search-friendly query before embedding.
         resp = await self.provider.generate(RETRIEVE_SYSTEM, query, max_tokens=80)
         return resp.text.strip() or query
 

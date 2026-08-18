@@ -22,12 +22,8 @@ class ComplexityRouter:
 
     def __init__(self) -> None:
         settings = get_settings()
-        if settings.llm_provider == "bedrock":
-            self.cheap_model = settings.bedrock_cheap_model
-            self.strong_model = settings.bedrock_model_id
-        else:
-            self.cheap_model = settings.openai_cheap_model
-            self.strong_model = settings.llm_model
+        self.cheap_model = settings.bedrock_cheap_model
+        self.strong_model = settings.bedrock_model_id
         self.cheap_max_words = 8
         self.cheap_max_tokens = 256
 
