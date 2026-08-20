@@ -1,0 +1,4 @@
+# pnpm blocks dependency build scripts by default. Vite's bundler (esbuild) needs
+# its postinstall to fetch its native binary, so we allow it explicitly.
+allowBuilds:
+  esbuild: true
