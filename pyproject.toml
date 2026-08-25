@@ -20,7 +20,7 @@ dependencies = [
 #   uv sync --extra agentcore
 agentcore = [
     "bedrock-agentcore>=0.1.0",
-    "bedrock-agentcore-starter-toolkit>=0.1.0",
+    "bedrock-agentcore-starter-toolkit>=0.3.12",
 ]
 
 [dependency-groups]

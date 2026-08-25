@@ -130,7 +130,7 @@ wheels = [
 
 [[package]]
 name = "bedrock-agentcore-starter-toolkit"
-version = "0.3.11"
+version = "0.3.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "autopep8" },
@@ -157,9 +157,9 @@ dependencies = [
     { name = "urllib3" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/0b/1262ad7e48ef97426e739ab57777c3116b64b612fd006e8511c0b4384e53/bedrock_agentcore_starter_toolkit-0.3.11.tar.gz", hash = "sha256:3eb5520676c4878967b68d563bbf4ece740cf5ded29f9632260a613d49fa88d1", size = 1134779, upload-time = "2026-07-28T20:03:37.204Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/99/6b/e7b16c7f370557b2b4c86e0a536026a7f8d363f5dbdfdb8c89f42f59fc12/bedrock_agentcore_starter_toolkit-0.3.12.tar.gz", hash = "sha256:5be096b064a9b9ee3a15d32bcb2ccc60b1fa1baf801a46c39cc11b0d2541f6fc", size = 1138615, upload-time = "2026-08-19T23:49:05.412Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cd/cd/de65107f4365919b6662784fc3369914bd6f6399b672afb19ac405e390b5/bedrock_agentcore_starter_toolkit-0.3.11-py3-none-any.whl", hash = "sha256:348d974422ff68428ad1148598a8ce286bc2938f3e73c73bb4b9d1e48e63ab27", size = 504721, upload-time = "2026-07-28T20:03:35.751Z" },
+    { url = "https://files.pythonhosted.org/packages/0e/30/6f7b4cc990dca3758e3a0638adcdd1ee0f59be23b634ec44ae0534f943d4/bedrock_agentcore_starter_toolkit-0.3.12-py3-none-any.whl", hash = "sha256:7c13fb288e29d917717e1ca14eb2610ca11b863fb7e2082d5b4e2beb8eba2a25", size = 505823, upload-time = "2026-08-19T23:49:03.957Z" },
 ]
 
 [[package]]
@@ -518,7 +518,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "bedrock-agentcore", marker = "extra == 'agentcore'", specifier = ">=0.1.0" },
-    { name = "bedrock-agentcore-starter-toolkit", marker = "extra == 'agentcore'", specifier = ">=0.1.0" },
+    { name = "bedrock-agentcore-starter-toolkit", marker = "extra == 'agentcore'", specifier = ">=0.3.12" },
     { name = "boto3", specifier = ">=1.28.0" },
     { name = "fastapi", specifier = ">=0.100.0" },
     { name = "langgraph", specifier = ">=0.0.20" },
