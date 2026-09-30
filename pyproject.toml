@@ -19,7 +19,7 @@ dependencies = [
 # Not needed for local dev, tests or the ECS Fargate path (imports are guarded).
 #   uv sync --extra agentcore
 agentcore = [
-    "bedrock-agentcore>=0.1.0",
+    "bedrock-agentcore>=1.23.1",
     "bedrock-agentcore-starter-toolkit>=0.3.12",
 ]
 
